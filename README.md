@@ -6,55 +6,59 @@
 
 # Meact
 
-## 특징
+> A lightweight React framework built with Bun, featuring file-based routing, SSR streaming, and ISR.
 
-- **파일 기반 라우팅** - `pages/` 디렉토리 기반 자동 라우팅
-- **SSR & Streaming** - React Streaming SSR 지원
-- **ISR** - Incremental Static Regeneration
-- **이미지 최적화** - Sharp 기반 자동 최적화 및 캐싱
-- **API Routes** - `pages/api/` 디렉토리 기반 API 엔드포인트
-- **타입 안전** - TypeScript 완벽 지원
+**This framework is written in Bun and requires Bun to run.**
 
-## 빠른 시작
+## Features
 
-### 새 프로젝트 생성
+- **File-based Routing** - Automatic routing based on `pages/` directory structure
+- **SSR & Streaming** - React streaming server-side rendering with hydration
+- **ISR** - Incremental Static Regeneration with background revalidation
+- **Image Optimization** - Automatic image optimization and caching using Sharp
+- **API Routes** - Built-in API endpoints support in `pages/api/`
+- **Type Safety** - Full TypeScript support
+
+## Quick Start
+
+### Create a New Project
 
 ```bash
 bunx meact create my-app
 cd my-app
 ```
 
-### 개발 서버 실행
+### Start Development Server
 
 ```bash
 bun dev
 ```
 
-### 프로덕션 빌드
+### Build for Production
 
 ```bash
 bun run build
 ```
 
-## 프로젝트 구조
+## Project Structure
 
 ```
 my-app/
 ├── pages/
-│   ├── page.tsx              # 메인 페이지
-│   ├── layout.tsx            # 공통 레이아웃
-│   ├── not-found.tsx         # 404 페이지
-│   ├── loading.tsx           # 로딩 UI
-│   ├── error.tsx             # 에러 바운더리
+│   ├── page.tsx              # Main page
+│   ├── layout.tsx            # Layout component
+│   ├── not-found.tsx         # 404 page
+│   ├── loading.tsx           # Loading UI
+│   ├── error.tsx             # Error boundary
 │   └── api/
-│       └── hello.ts          # API 엔드포인트
-├── public/                   # 정적 파일
-└── proxy.ts                  # 글로벌 미들웨어 (옵션)
+│       └── hello.ts          # API endpoint
+├── public/                   # Static files
+└── proxy.ts                  # Global middleware (optional)
 ```
 
-## 핵심 기능
+## Core Features
 
-### 페이지 컴포넌트
+### Page Component
 
 ```tsx
 // pages/page.tsx
@@ -71,16 +75,16 @@ export const Page = async ({ params, searchParams, cookies, headers }) => {
 }
 ```
 
-### 동적 라우팅
+### Dynamic Routing
 
 ```
 pages/
-├── [id]/page.tsx           # /123
-├── [...slug]/page.tsx      # /a/b/c
-└── [[...slug]]/page.tsx    # / 또는 /a/b/c
+├── [id]/page.tsx           # Matches /123
+├── [...slug]/page.tsx      # Matches /a/b/c
+└── [[...slug]]/page.tsx    # Matches / or /a/b/c
 ```
 
-### 이미지 최적화
+### Image Optimization
 
 ```tsx
 import { Image } from 'meact/ui/Image'
@@ -93,7 +97,7 @@ import { Image } from 'meact/ui/Image'
   quality={80}
 />
 
-// Fill 모드
+// Fill mode
 <div style={{ position: 'relative', width: '100%', height: '400px' }}>
   <Image
     src="/banner.jpg"
@@ -104,11 +108,11 @@ import { Image } from 'meact/ui/Image'
 </div>
 ```
 
-### ISR
+### ISR (Incremental Static Regeneration)
 
 ```tsx
 // pages/blog/[id]/page.tsx
-export const revalidate = 60 // 60초마다 재검증
+export const revalidate = 60 // Revalidate every 60 seconds
 
 export const BlogPost = async ({ params }) => {
   const post = await fetchPost(params.id)
@@ -135,30 +139,30 @@ export const POST = async (request: Request) => {
 }
 ```
 
-### 환경 변수
+### Environment Variables
 
 ```bash
 # .env
-SECRET_KEY=server-only-value              # 서버 전용
-MEACT_PUBLIC_API_URL=https://api.com     # 클라이언트 포함
+SECRET_KEY=server-only-value              # Server-only
+MEACT_PUBLIC_API_URL=https://api.com     # Available on client
 ```
 
 ```tsx
-// 서버 컴포넌트
-const secret = process.env.SECRET_KEY              // 서버만
-const apiUrl = process.env.MEACT_PUBLIC_API_URL   // 서버 + 클라이언트
+// Server component
+const secret = process.env.SECRET_KEY              // Server-only
+const apiUrl = process.env.MEACT_PUBLIC_API_URL   // Server + Client
 ```
 
-## 요구사항
+## Requirements
 
-- **Bun** ≥ 1.0.0
+- **Bun** ≥ 1.3.0
 - **React** 19
 - **TypeScript** 5
 
-## 라이선스
+## License
 
 MIT
 
-## 링크
+## Links
 
 - [GitHub](https://github.com/B-HS/Meact)
