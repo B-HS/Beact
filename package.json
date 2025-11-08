@@ -88,6 +88,7 @@
     "bun": ">=1.0.0"
   },
   "scripts": {
+    "preinstall": "node -e \"if (process.env.npm_execpath.indexOf('bun') === -1) throw new Error('Please use Bun to install dependencies: bun install')\"",
     "dev": "cd examples/basic && bun --watch ../../src/commands/dev.ts",
     "build": "rm -rf dist && bunx tsc",
     "prepublishOnly": "bun run build",
