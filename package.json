@@ -1,6 +1,8 @@
 {
   "name": "meact",
   "version": "0.1.0",
+  "description": "A lightweight React framework with SSR and SSG support",
+  "keywords": ["react", "framework", "ssr", "ssg", "routing"],
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -91,5 +93,10 @@
     "prepublishOnly": "bun run build",
     "typecheck": "bunx tsc --noEmit"
   },
-  "private": true
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/B-HS/Meact"
+  },
+  "author": "HyunseokByun"
 }

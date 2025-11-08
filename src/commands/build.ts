@@ -1,5 +1,5 @@
 import { loadConfig } from '../config'
-import { mkdirSync, writeFileSync, cpSync, existsSync, rmSync } from 'fs'
+import { mkdirSync, writeFileSync, cpSync, existsSync, rmSync, readFileSync } from 'fs'
 import { join } from 'path'
 
 export const build = async () => {
@@ -82,8 +82,27 @@ console.log('✅ Ready at http://localhost:' + config.port)
         cpSync(userConfigPath, join(standaloneDir, 'meact.config.ts'))
     }
 
-    cpSync(join(rootDir, 'node_modules/react'), join(standaloneDir, 'node_modules/react'), { recursive: true, dereference: true })
-    cpSync(join(rootDir, 'node_modules/react-dom'), join(standaloneDir, 'node_modules/react-dom'), { recursive: true, dereference: true })
+    console.log('📦 Copying dependencies...')
+    const packageJsonPath = join(rootDir, 'package.json')
+    if (existsSync(packageJsonPath)) {
+        const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
+        const dependencies = { ...packageJson.dependencies, ...packageJson.devDependencies }
+
+        for (const dep of Object.keys(dependencies)) {
+            const depPath = join(rootDir, 'node_modules', dep)
+            if (existsSync(depPath)) {
+                console.log(`  - ${dep}`)
+                try {
+                    cpSync(depPath, join(standaloneDir, 'node_modules', dep), {
+                        recursive: true,
+                        verbatimSymlinks: true,
+                    })
+                } catch (err) {
+                    console.warn(`  ⚠️  Failed to copy ${dep}: ${err instanceof Error ? err.message : String(err)}`)
+                }
+            }
+        }
+    }
 
     const packageJson = {
         name: 'meact-standalone',
