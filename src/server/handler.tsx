@@ -4,7 +4,7 @@ import { createClientBundle, getBundleOutputDir } from '../build/bundler'
 import { promiseStorage } from '../context/promise'
 import { handleApiRequest, scanApiRoutes } from '../router'
 import { buildComponentTree, getNotFoundComponent, getRouteComponents } from '../router/router'
-import type { MeactConfig, PageProps, SerializablePageProps } from '../types'
+import type { ResolvedMeactConfig, PageProps, SerializablePageProps } from '../types'
 import { handleImageRequest } from './image-handler'
 import { isrCache } from './isr-cache'
 import { loadUserProxy, runProxyChain } from './proxy'
@@ -89,7 +89,7 @@ const serializePageProps = (pageProps: PageProps): SerializablePageProps => {
     }
 }
 
-export const fetch = async (request: Request, config: MeactConfig) => {
+export const fetch = async (request: Request, config: ResolvedMeactConfig) => {
     if (!renderToReadableStream) {
         const reactDomServerPath = `${config.rootDir}/node_modules/react-dom/server`
         const reactDomServer = await import(reactDomServerPath)

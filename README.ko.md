@@ -1,8 +1,5 @@
-<div style="display:flex; flex-direction:column; justifyContent: center; width:100%">
-<img src="./meact.png" width="200px" alt="meact logo" />
-<sub>(mehhh)</sub>
-</div>
-<br/>
+<center><img src="./meact.png" width="200px" alt="meact logo" /></center>
+<center><sub>(mehhh)</sub></center>
 
 # Meact
 
@@ -152,6 +149,45 @@ MEACT_PUBLIC_API_URL=https://api.com     # 클라이언트에서 사용 가능
 const secret = process.env.SECRET_KEY // 서버 전용
 const apiUrl = process.env.MEACT_PUBLIC_API_URL // 서버 + 클라이언트
 ```
+
+### 설정
+
+프로젝트 루트에 `meact.config.ts` (또는 `.js`, `.mjs`) 파일을 생성하여 프레임워크 동작을 커스터마이징할 수 있습니다:
+
+```tsx
+// meact.config.ts
+import type { MeactConfig } from 'meact'
+
+export default {
+    port: 4000,
+    constants: {
+        server: {
+            defaultPort: 4000,
+        },
+        cache: {
+            maxIsrCacheSize: 2000,
+            maxImageCacheSizeMB: 1000,
+        },
+    },
+    plugins: [
+        {
+            name: 'my-plugin',
+            setup: async (config) => {
+                console.log('플러그인 초기화!')
+            },
+        },
+    ],
+} satisfies MeactConfig
+```
+
+**사용 가능한 설정 옵션:**
+
+-   `port` - 개발 서버 포트 (기본값: 3000)
+-   `pagesDir` - 페이지 디렉토리 경로 (기본값: `pages`)
+-   `publicDir` - 정적 파일 디렉토리 (기본값: `public`)
+-   `cacheDir` - 캐시 디렉토리 (기본값: `.meact/cache`)
+-   `constants` - 프레임워크 상수 오버라이드
+-   `plugins` - 커스텀 플러그인 추가
 
 ## 요구사항
 

@@ -71,8 +71,8 @@ const extractExports = (code: string, filename: string): { named: string[]; hasD
         }
 
         if (ts.isFunctionDeclaration(node)) {
-            const hasExport = node.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword)
-            const isDefault = node.modifiers?.some(m => m.kind === ts.SyntaxKind.DefaultKeyword)
+            const hasExport = node.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword)
+            const isDefault = node.modifiers?.some((m) => m.kind === ts.SyntaxKind.DefaultKeyword)
 
             if (hasExport && isDefault) {
                 hasDefaultExport = true
@@ -82,7 +82,7 @@ const extractExports = (code: string, filename: string): { named: string[]; hasD
         }
 
         if (ts.isVariableStatement(node)) {
-            const hasExport = node.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword)
+            const hasExport = node.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword)
 
             if (hasExport) {
                 for (const decl of node.declarationList.declarations) {

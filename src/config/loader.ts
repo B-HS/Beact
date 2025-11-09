@@ -1,20 +1,51 @@
 import { join } from 'path'
-import type { MeactConfig } from '../types'
+import { existsSync } from 'fs'
+import type { MeactConfig, ResolvedMeactConfig } from '../types'
+import { getConstants, defaultConstants } from './constants'
 
-export const loadConfig = async (rootDir = process.cwd()): Promise<MeactConfig> => {
+export const loadConfig = async (rootDir = process.cwd()): Promise<ResolvedMeactConfig> => {
     const defaults: MeactConfig = {
         rootDir,
-        pagesDir: join(rootDir, 'pages'),
-        publicDir: join(rootDir, 'public'),
-        cacheDir: join(rootDir, '.meact/cache'),
-        port: 3000,
+        pagesDir: join(rootDir, defaultConstants.paths.pagesDir),
+        publicDir: join(rootDir, defaultConstants.paths.publicDir),
+        cacheDir: join(rootDir, defaultConstants.cache.cacheDir),
+        port: defaultConstants.server.defaultPort,
     }
 
-    try {
-        const userConfigPath = join(rootDir, 'meact.config.ts')
-        const userConfig = await import(userConfigPath)
-        return { ...defaults, ...userConfig.default }
-    } catch {
-        return defaults
+    let userConfig: Partial<MeactConfig> = {}
+
+    const possiblePaths = [join(rootDir, 'meact.config.ts'), join(rootDir, 'meact.config.js'), join(rootDir, 'meact.config.mjs')]
+
+    for (const configPath of possiblePaths) {
+        if (existsSync(configPath)) {
+            try {
+                const imported = await import(configPath)
+                userConfig = imported.default || imported
+                break
+            } catch (error) {
+                console.warn(`Failed to load config from ${configPath}:`, error)
+            }
+        }
+    }
+
+    const merged = { ...defaults, ...userConfig }
+    const constants = getConstants(merged.constants)
+
+    if (merged.plugins) {
+        for (const plugin of merged.plugins) {
+            if (plugin.setup) {
+                await plugin.setup(merged)
+            }
+        }
+    }
+
+    return {
+        rootDir: merged.rootDir!,
+        pagesDir: merged.pagesDir!,
+        publicDir: merged.publicDir!,
+        cacheDir: merged.cacheDir!,
+        port: merged.port!,
+        plugins: merged.plugins,
+        constants,
     }
 }

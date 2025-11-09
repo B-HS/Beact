@@ -1,8 +1,5 @@
-<div style="display:flex; flex-direction:column; justifyContent: center; width:100%">
-<img src="./meact.png" width="200px" alt="meact logo" />
-<sub>(mehhh)</sub>
-</div>
-<br/>
+<center><img src="./meact.png" width="200px" alt="meact logo" /></center>
+<center><sub>(mehhh)</sub></center>
 
 # Meact
 
@@ -152,6 +149,45 @@ MEACT_PUBLIC_API_URL=https://api.com     # Available on client
 const secret = process.env.SECRET_KEY // Server-only
 const apiUrl = process.env.MEACT_PUBLIC_API_URL // Server + Client
 ```
+
+### Configuration
+
+Create a `meact.config.ts` (or `.js`, `.mjs`) file in your project root to customize framework behavior:
+
+```tsx
+// meact.config.ts
+import type { MeactConfig } from 'meact'
+
+export default {
+    port: 4000,
+    constants: {
+        server: {
+            defaultPort: 4000,
+        },
+        cache: {
+            maxIsrCacheSize: 2000,
+            maxImageCacheSizeMB: 1000,
+        },
+    },
+    plugins: [
+        {
+            name: 'my-plugin',
+            setup: async (config) => {
+                console.log('Plugin initialized!')
+            },
+        },
+    ],
+} satisfies MeactConfig
+```
+
+**Available configuration options:**
+
+-   `port` - Development server port (default: 3000)
+-   `pagesDir` - Pages directory path (default: `pages`)
+-   `publicDir` - Public assets directory (default: `public`)
+-   `cacheDir` - Cache directory (default: `.meact/cache`)
+-   `constants` - Override framework constants
+-   `plugins` - Add custom plugins
 
 ## Requirements
 

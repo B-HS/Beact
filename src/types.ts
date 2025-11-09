@@ -29,12 +29,30 @@ export interface ComponentFactory {
 
 export type ProxyHandler = (request: Request) => Request | Response | Promise<Request | Response>
 
+export interface MeactPlugin {
+    name: string
+    setup?: (config: MeactConfig) => void | Promise<void>
+    bundlePlugin?: any
+}
+
 export interface MeactConfig {
+    rootDir?: string
+    pagesDir?: string
+    publicDir?: string
+    cacheDir?: string
+    port?: number
+    constants?: Partial<import('./config/constants').MeactConstants>
+    plugins?: MeactPlugin[]
+}
+
+export interface ResolvedMeactConfig {
     rootDir: string
     pagesDir: string
     publicDir: string
     cacheDir: string
     port: number
+    constants: import('./config/constants').MeactConstants
+    plugins?: MeactPlugin[]
 }
 
 declare global {

@@ -1,6 +1,6 @@
-import { join, resolve } from 'path'
+import { resolve } from 'path'
 import { existsSync, statSync } from 'fs'
-import type { MeactConfig } from '../types'
+import type { ResolvedMeactConfig } from '../types'
 
 const MIME_TYPES: Record<string, string> = {
     '.html': 'text/html',
@@ -28,7 +28,7 @@ export const getMimeType = (filePath: string) => {
     return MIME_TYPES[ext] || 'application/octet-stream'
 }
 
-export const serveStaticFile = async (request: Request, config: MeactConfig) => {
+export const serveStaticFile = async (request: Request, config: ResolvedMeactConfig) => {
     const url = new URL(request.url)
     const pathname = url.pathname
 

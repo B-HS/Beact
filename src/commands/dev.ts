@@ -31,10 +31,7 @@ plugin({
 const clients = new Set<ServerWebSocket<unknown>>()
 
 const clearAllCaches = () => {
-    const caches = [
-        require.cache,
-        (globalThis as any).Bun?.main?.loader?.cache,
-    ]
+    const caches = [require.cache, (globalThis as any).Bun?.main?.loader?.cache]
 
     for (const cache of caches) {
         if (cache) {

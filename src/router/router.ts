@@ -1,7 +1,7 @@
 import { scanPages } from './scanner'
 import { join } from 'path'
 import type { ReactElement } from 'react'
-import type { ComponentFactory, ComponentFactoryResult, RouteParams, Metadata, PageProps, MeactConfig } from '../types'
+import type { ComponentFactory, ComponentFactoryResult, RouteParams, Metadata, PageProps, ResolvedMeactConfig } from '../types'
 
 export const ssrCache = new WeakMap<ComponentFactory, ComponentFactoryResult>()
 
@@ -63,7 +63,7 @@ export const collectMetadata = async (layouts: ComponentFactory[], page: Compone
     return metadataList
 }
 
-export const getNotFoundComponent = async (pathname: string, config: MeactConfig) => {
+export const getNotFoundComponent = async (pathname: string, config: ResolvedMeactConfig) => {
     const routes = scanPages(config.pagesDir)
 
     const segments = pathname === '/' ? [] : pathname.split('/').filter(Boolean)
@@ -109,7 +109,7 @@ export const getNotFoundComponent = async (pathname: string, config: MeactConfig
     }
 }
 
-export const getRouteComponents = async (pathname: string, config: MeactConfig) => {
+export const getRouteComponents = async (pathname: string, config: ResolvedMeactConfig) => {
     const routes = scanPages(config.pagesDir)
     const matchResult = matchRoute(pathname, routes)
 
