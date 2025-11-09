@@ -10,6 +10,7 @@
         "@types/bun": "latest",
         "@types/react": "^19",
         "@types/react-dom": "^19",
+        "feconfig-bhs": "^1.0.7",
         "typescript": "^5",
       },
       "peerDependencies": {
@@ -84,6 +85,8 @@
     "csstype": ["csstype@3.1.3", "", {}, "sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw=="],
 
     "detect-libc": ["detect-libc@2.1.2", "", {}, "sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ=="],
+
+    "feconfig-bhs": ["feconfig-bhs@1.0.7", "", {}, "sha512-PAdF5o50tPdbdbG4YReyv2VD4gAYsfAlsoXhr2QcApeMM16cZxJwZAl8aJLjJUQm9kNss3E+OrQdzHq9rUh8DA=="],
 
     "react": ["react@19.2.0", "", {}, "sha512-tmbWg6W31tQLeB5cdIBOicJDJRR2KzXsV7uSK9iNfLWQ5bIZfxuPEHp7M8wiHyHnn0DD1i7w3Zmin0FtkrwoCQ=="],
 

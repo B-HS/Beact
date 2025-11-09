@@ -1,12 +1,14 @@
-import { getRouteComponents, getNotFoundComponent, buildComponentTree } from '../router/router'
-import { createClientBundle, getBundleFromCache } from '../build/bundler'
+import { existsSync, readFileSync } from 'fs'
+import { join } from 'path'
+import { createClientBundle, getBundleOutputDir } from '../build/bundler'
 import { promiseStorage } from '../context/promise'
-import { scanApiRoutes, handleApiRequest } from '../router'
+import { handleApiRequest, scanApiRoutes } from '../router'
+import { buildComponentTree, getNotFoundComponent, getRouteComponents } from '../router/router'
+import type { MeactConfig, PageProps, SerializablePageProps } from '../types'
+import { handleImageRequest } from './image-handler'
+import { isrCache } from './isr-cache'
 import { loadUserProxy, runProxyChain } from './proxy'
 import { serveStaticFile } from './static'
-import { isrCache } from './isr-cache'
-import { handleImageRequest } from './image-handler'
-import type { PageProps, SerializablePageProps, MeactConfig } from '../types'
 
 let apiRoutesCache: ReturnType<typeof scanApiRoutes> | null = null
 let renderToReadableStream: any = null
@@ -74,7 +76,7 @@ const serializePageProps = (pageProps: PageProps): SerializablePageProps => {
             params: pageProps.params || {},
             searchParams: pageProps.searchParams || {},
             cookies: pageProps.cookies || {},
-            headers: headersRecord
+            headers: headersRecord,
         }
     } catch (err) {
         console.error('Failed to serialize PageProps:', err)
@@ -82,7 +84,7 @@ const serializePageProps = (pageProps: PageProps): SerializablePageProps => {
             params: pageProps.params || {},
             searchParams: {},
             cookies: {},
-            headers: {}
+            headers: {},
         }
     }
 }
@@ -116,13 +118,20 @@ export const fetch = async (request: Request, config: MeactConfig) => {
     }
 
     if (pathname.startsWith('/.meact/') && pathname.endsWith('.js')) {
-        const bundleId = pathname.replace('/.meact/', '').replace('.js', '')
-        const bundleCode = getBundleFromCache(bundleId)
+        const parts = pathname.replace('/.meact/', '').split('/')
+        const bundleId = parts[0]!
+        const filename = parts.slice(1).join('/')
 
-        if (bundleCode) {
-            return new Response(bundleCode, {
-                headers: { 'content-type': 'application/javascript' },
-            })
+        const outputDir = getBundleOutputDir(bundleId)
+
+        if (outputDir) {
+            const filePath = join(outputDir, filename)
+            if (existsSync(filePath)) {
+                const bundleCode = readFileSync(filePath, 'utf-8')
+                return new Response(bundleCode, {
+                    headers: { 'content-type': 'application/javascript' },
+                })
+            }
         }
 
         return new Response('Bundle not found', { status: 404 })
@@ -157,7 +166,7 @@ export const fetch = async (request: Request, config: MeactConfig) => {
                 const pageProps: PageProps = { ...basePageProps, params: {} }
                 const notFoundTree = await buildComponentTree(layouts, notFound, pageProps)
 
-                const { bundleId } = await createClientBundle(layoutPaths, notFoundPath, config.rootDir, undefined, pathname)
+                const { bundleId, mainScript } = await createClientBundle(layoutPaths, notFoundPath, config.rootDir, undefined, pathname)
 
                 const promiseCache = Object.fromEntries(cache.entries())
                 const serializedCache = JSON.stringify(promiseCache)
@@ -165,7 +174,7 @@ export const fetch = async (request: Request, config: MeactConfig) => {
 
                 const stream = await renderToReadableStream(notFoundTree, {
                     bootstrapScriptContent: `window.__MEACT_PROMISE_CACHE__=${serializedCache};window.__MEACT_PAGE_PROPS__=${serializedPageProps}`,
-                    bootstrapScripts: [`/.meact/${bundleId}.js`],
+                    bootstrapScripts: [`/.meact/${bundleId}/${mainScript}`],
                 })
 
                 return new Response(stream, {
@@ -180,7 +189,7 @@ export const fetch = async (request: Request, config: MeactConfig) => {
         const { layouts, page, layoutPaths, pagePath, errorPath, loadingPath, params, metadata, revalidate } = routeComponents
         const pageProps: PageProps = { ...basePageProps, params }
 
-        const { bundleId } = await createClientBundle(layoutPaths, pagePath, config.rootDir, errorPath, pathname, loadingPath)
+        const { bundleId, mainScript } = await createClientBundle(layoutPaths, pagePath, config.rootDir, errorPath, pathname, loadingPath)
 
         const cacheKey = `${pathname}:${JSON.stringify(params)}`
         const cacheResult = isrCache.get(cacheKey)
@@ -201,7 +210,7 @@ export const fetch = async (request: Request, config: MeactConfig) => {
                     const serializedPageProps = JSON.stringify(serializePageProps(pageProps))
                     const stream = await renderToReadableStream(componentTree, {
                         bootstrapScriptContent: `window.__MEACT_PROMISE_CACHE__=${serializedCache};window.__MEACT_PAGE_PROPS__=${serializedPageProps}`,
-                        bootstrapScripts: [`/.meact/${bundleId}.js`],
+                        bootstrapScripts: [`/.meact/${bundleId}/${mainScript}`],
                     })
                     return await new Response(stream).text()
                 })
@@ -220,7 +229,7 @@ export const fetch = async (request: Request, config: MeactConfig) => {
 
         const stream = await renderToReadableStream(componentTree, {
             bootstrapScriptContent: `window.__MEACT_PROMISE_CACHE__=${serializedCache};window.__MEACT_PAGE_PROPS__=${serializedPageProps}`,
-            bootstrapScripts: [`/.meact/${bundleId}.js`],
+            bootstrapScripts: [`/.meact/${bundleId}/${mainScript}`],
         })
 
         if (revalidate !== false && revalidate !== undefined) {

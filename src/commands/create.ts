@@ -31,18 +31,18 @@ export const create = async (projectName?: string) => {
                     },
                     dependencies: {
                         '@meact/core': 'workspace:*',
-                        react: '^19',
+                        'react': '^19',
                         'react-dom': '^19',
                     },
                     devDependencies: {
                         '@types/react': '^19',
                         '@types/react-dom': '^19',
-                        typescript: '^5',
+                        'typescript': '^5',
                     },
                 },
                 null,
-                2
-            )
+                2,
+            ),
         )
 
         await writeFile(
@@ -70,8 +70,8 @@ export const create = async (projectName?: string) => {
                     exclude: ['node_modules'],
                 },
                 null,
-                2
-            )
+                2,
+            ),
         )
 
         await writeFile(
@@ -83,7 +83,7 @@ SECRET_KEY=your-secret-key-here
 # MEACT_PUBLIC_ 접두사가 있는 변수만 클라이언트 번들에 포함됨
 MEACT_PUBLIC_API_URL=https://api.example.com
 MEACT_PUBLIC_APP_NAME=Meact Framework
-`
+`,
         )
 
         await writeFile(
@@ -93,7 +93,7 @@ MEACT_PUBLIC_APP_NAME=Meact Framework
 .env
 dist
 *.log
-`
+`,
         )
 
         await writeFile(
@@ -127,7 +127,7 @@ const Layout = async ({ children, metadata = [] }: LayoutProps) => {
 }
 
 export default Layout
-`
+`,
         )
 
         await writeFile(
@@ -152,7 +152,7 @@ const Home = async ({ params, searchParams }: PageProps) => {
 }
 
 export default Home
-`
+`,
         )
 
         await writeFile(join(projectPath, 'public', '.gitkeep'), '')
@@ -181,7 +181,7 @@ bun run dev
 
 - [Meact Documentation](https://github.com/your-org/meact)
 - [React Documentation](https://react.dev)
-`
+`,
         )
 
         console.log('✅ Project created successfully!\n')

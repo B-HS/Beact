@@ -23,13 +23,6 @@
         "noUncheckedIndexedAccess": true,
         "noImplicitOverride": true
     },
-    "include": [
-        "src/**/*.ts",
-        "src/**/*.tsx"
-    ],
-    "exclude": [
-        "src/**/*.test.ts",
-        "examples",
-        "node_modules"
-    ]
+    "include": ["src/**/*.ts", "src/**/*.tsx"],
+    "exclude": ["src/**/*.test.ts", "examples", "node_modules"]
 }

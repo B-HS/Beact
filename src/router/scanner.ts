@@ -34,16 +34,20 @@ const parseDynamicSegment = (segment: string) => {
 }
 
 const buildRoutePattern = (segments: string[]): string => {
-    return segments.map(seg => {
-        const parsed = parseDynamicSegment(seg)
-        if (parsed.isDynamic) {
-            if (parsed.isCatchAll) {
-                return parsed.isOptional ? `(?:/(.*?))?` : `/(.*)`
-            }
-            return `/([^/]+)`
-        }
-        return `/${seg}`
-    }).join('') || '/'
+    return (
+        segments
+            .map((seg) => {
+                const parsed = parseDynamicSegment(seg)
+                if (parsed.isDynamic) {
+                    if (parsed.isCatchAll) {
+                        return parsed.isOptional ? `(?:/(.*?))?` : `/(.*)`
+                    }
+                    return `/([^/]+)`
+                }
+                return `/${seg}`
+            })
+            .join('') || '/'
+    )
 }
 
 const scanDirectory = (dir: string, baseDir: string, currentPath: string = '', pathSegments: string[] = []): RouteMap => {
@@ -59,16 +63,22 @@ const scanDirectory = (dir: string, baseDir: string, currentPath: string = '', p
     const urlPath = currentPath || '/'
     const relativePath = currentPath || ''
 
-    const isDynamic = pathSegments.some(seg => isDynamicSegment(seg))
-    const params = pathSegments.filter(seg => isDynamicSegment(seg)).map(seg => {
-        const parsed = parseDynamicSegment(seg)
-        return parsed.paramName || ''
-    }).filter(Boolean)
+    const isDynamic = pathSegments.some((seg) => isDynamicSegment(seg))
+    const params = pathSegments
+        .filter((seg) => isDynamicSegment(seg))
+        .map((seg) => {
+            const parsed = parseDynamicSegment(seg)
+            return parsed.paramName || ''
+        })
+        .filter(Boolean)
 
-    const catchAllParams = pathSegments.filter(seg => isDynamicSegment(seg)).map(seg => {
-        const parsed = parseDynamicSegment(seg)
-        return parsed.isCatchAll ? parsed.paramName : null
-    }).filter(Boolean) as string[]
+    const catchAllParams = pathSegments
+        .filter((seg) => isDynamicSegment(seg))
+        .map((seg) => {
+            const parsed = parseDynamicSegment(seg)
+            return parsed.isCatchAll ? parsed.paramName : null
+        })
+        .filter(Boolean) as string[]
 
     if (!routes[urlPath]) {
         routes[urlPath] = {
@@ -76,7 +86,7 @@ const scanDirectory = (dir: string, baseDir: string, currentPath: string = '', p
             isDynamic,
             params,
             catchAllParams,
-            pattern: isDynamic ? buildRoutePattern(pathSegments) : undefined
+            pattern: isDynamic ? buildRoutePattern(pathSegments) : undefined,
         }
     }
 
@@ -122,7 +132,7 @@ const scanDirectory = (dir: string, baseDir: string, currentPath: string = '', p
                         pattern: info.pattern,
                         error: info.error || parentRoute.error,
                         notFound: info.notFound || parentRoute.notFound,
-                        loading: info.loading || parentRoute.loading
+                        loading: info.loading || parentRoute.loading,
                     }
                 } else {
                     routes[path].layouts = [...parentRoute.layouts, ...info.layouts]
@@ -175,29 +185,34 @@ const scanApiDirectory = (dir: string, baseDir: string, currentPath: string = ''
                 const fileName = entry.replace(/\.tsx?$/, '')
                 const urlPath = currentPath ? `/${currentPath}/${fileName}` : `/${fileName}`
 
-                const isDynamic = pathSegments.some(seg => isDynamicSegment(seg)) || isDynamicSegment(fileName)
+                const isDynamic = pathSegments.some((seg) => isDynamicSegment(seg)) || isDynamicSegment(fileName)
                 const allSegments = [...pathSegments, fileName]
-                const params = allSegments.filter(seg => isDynamicSegment(seg)).map(seg => {
-                    const parsed = parseDynamicSegment(seg)
-                    return parsed.paramName || ''
-                }).filter(Boolean)
+                const params = allSegments
+                    .filter((seg) => isDynamicSegment(seg))
+                    .map((seg) => {
+                        const parsed = parseDynamicSegment(seg)
+                        return parsed.paramName || ''
+                    })
+                    .filter(Boolean)
 
-                const catchAllParams = allSegments.filter(seg => isDynamicSegment(seg)).map(seg => {
-                    const parsed = parseDynamicSegment(seg)
-                    return parsed.isCatchAll ? parsed.paramName : null
-                }).filter(Boolean) as string[]
+                const catchAllParams = allSegments
+                    .filter((seg) => isDynamicSegment(seg))
+                    .map((seg) => {
+                        const parsed = parseDynamicSegment(seg)
+                        return parsed.isCatchAll ? parsed.paramName : null
+                    })
+                    .filter(Boolean) as string[]
 
                 routes[urlPath] = {
                     filePath: resolve(fullPath),
                     isDynamic,
                     params,
                     catchAllParams,
-                    pattern: isDynamic ? buildRoutePattern(allSegments) : undefined
+                    pattern: isDynamic ? buildRoutePattern(allSegments) : undefined,
                 }
             }
         })
-    } catch (error) {
-    }
+    } catch (error) {}
 
     return routes
 }

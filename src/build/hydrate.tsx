@@ -1,7 +1,5 @@
 export const createHydrateScript = (layoutPaths: string[], pagePath: string, errorPath?: string, loadingPath?: string) => {
-    const layoutImports = layoutPaths
-        .map((path, index) => `import Layout${index} from '${path}'`)
-        .join('\n')
+    const layoutImports = layoutPaths.map((path, index) => `import Layout${index} from '${path}'`).join('\n')
 
     const errorImport = errorPath ? `import ErrorComponent from '${errorPath}'` : ''
     const errorBoundaryImport = errorPath ? `import { ErrorBoundary } from 'meact/ui/error-boundary'` : ''
@@ -88,9 +86,11 @@ const createHeadersProxy = (headersRecord) => {
     let tree = await pageResult.default()
 
 ${layoutPaths
-    .map((_, index) => `  const cachedLayout${index}Result = ssrCache.get(Layout${index})
+    .map(
+        (_, index) => `  const cachedLayout${index}Result = ssrCache.get(Layout${index})
   const layout${index}Result = cachedLayout${index}Result || await Layout${index}({ children: tree, ...pageProps${index === 0 ? ', metadata: []' : ''} })
-  tree = await layout${index}Result.default()`)
+  tree = await layout${index}Result.default()`,
+    )
     .reverse()
     .join('\n')}
 ${suspenseWrapper}

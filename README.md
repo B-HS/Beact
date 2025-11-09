@@ -12,12 +12,12 @@
 
 ## Features
 
-- **File-based Routing** - Automatic routing based on `pages/` directory structure
-- **SSR & Streaming** - React streaming server-side rendering with hydration
-- **ISR** - Incremental Static Regeneration with background revalidation
-- **Image Optimization** - Automatic image optimization and caching using Sharp
-- **API Routes** - Built-in API endpoints support in `pages/api/`
-- **Type Safety** - Full TypeScript support
+-   **File-based Routing** - Automatic routing based on `pages/` directory structure
+-   **SSR & Streaming** - React streaming server-side rendering with hydration
+-   **ISR** - Incremental Static Regeneration with background revalidation
+-   **Image Optimization** - Automatic image optimization and caching using Sharp
+-   **API Routes** - Built-in API endpoints support in `pages/api/`
+-   **Type Safety** - Full TypeScript support
 
 ## Quick Start
 
@@ -63,15 +63,15 @@ my-app/
 ```tsx
 // pages/page.tsx
 export const Page = async ({ params, searchParams, cookies, headers }) => {
-  const data = await fetch('...')
+    const data = await fetch('...')
 
-  return {
-    metadata: {
-      title: 'My Page',
-      description: '...'
-    },
-    default: () => <div>{/* ... */}</div>
-  }
+    return {
+        metadata: {
+            title: 'My Page',
+            description: '...',
+        },
+        default: () => <div>{/* ... */}</div>,
+    }
 }
 ```
 
@@ -115,11 +115,11 @@ import { Image } from 'meact/ui/Image'
 export const revalidate = 60 // Revalidate every 60 seconds
 
 export const BlogPost = async ({ params }) => {
-  const post = await fetchPost(params.id)
+    const post = await fetchPost(params.id)
 
-  return {
-    default: () => <article>{/* ... */}</article>
-  }
+    return {
+        default: () => <article>{/* ... */}</article>,
+    }
 }
 ```
 
@@ -128,14 +128,14 @@ export const BlogPost = async ({ params }) => {
 ```tsx
 // pages/api/users/[id].ts
 export const GET = async (request: Request, { params }) => {
-  const user = await db.user.findById(params.id)
-  return Response.json(user)
+    const user = await db.user.findById(params.id)
+    return Response.json(user)
 }
 
 export const POST = async (request: Request) => {
-  const body = await request.json()
-  const user = await db.user.create(body)
-  return Response.json(user, { status: 201 })
+    const body = await request.json()
+    const user = await db.user.create(body)
+    return Response.json(user, { status: 201 })
 }
 ```
 
@@ -149,15 +149,15 @@ MEACT_PUBLIC_API_URL=https://api.com     # Available on client
 
 ```tsx
 // Server component
-const secret = process.env.SECRET_KEY              // Server-only
-const apiUrl = process.env.MEACT_PUBLIC_API_URL   // Server + Client
+const secret = process.env.SECRET_KEY // Server-only
+const apiUrl = process.env.MEACT_PUBLIC_API_URL // Server + Client
 ```
 
 ## Requirements
 
-- **Bun** ≥ 1.3.0
-- **React** 19
-- **TypeScript** 5
+-   **Bun** ≥ 1.3.0
+-   **React** 19
+-   **TypeScript** 5
 
 ## License
 
@@ -165,4 +165,4 @@ MIT
 
 ## Links
 
-- [GitHub](https://github.com/B-HS/Meact)
+-   [GitHub](https://github.com/B-HS/Meact)

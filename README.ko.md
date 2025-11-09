@@ -12,12 +12,12 @@
 
 ## 특징
 
-- **파일 기반 라우팅** - `pages/` 디렉토리 구조 기반 자동 라우팅
-- **SSR & 스트리밍** - 하이드레이션을 지원하는 React 스트리밍 서버 사이드 렌더링
-- **ISR** - 백그라운드 재검증을 통한 증분 정적 재생성
-- **이미지 최적화** - Sharp를 사용한 자동 이미지 최적화 및 캐싱
-- **API Routes** - `pages/api/`에서 API 엔드포인트 지원
-- **타입 안전** - 완벽한 TypeScript 지원
+-   **파일 기반 라우팅** - `pages/` 디렉토리 구조 기반 자동 라우팅
+-   **SSR & 스트리밍** - 하이드레이션을 지원하는 React 스트리밍 서버 사이드 렌더링
+-   **ISR** - 백그라운드 재검증을 통한 증분 정적 재생성
+-   **이미지 최적화** - Sharp를 사용한 자동 이미지 최적화 및 캐싱
+-   **API Routes** - `pages/api/`에서 API 엔드포인트 지원
+-   **타입 안전** - 완벽한 TypeScript 지원
 
 ## 빠른 시작
 
@@ -63,15 +63,15 @@ my-app/
 ```tsx
 // pages/page.tsx
 export const Page = async ({ params, searchParams, cookies, headers }) => {
-  const data = await fetch('...')
+    const data = await fetch('...')
 
-  return {
-    metadata: {
-      title: 'My Page',
-      description: '...'
-    },
-    default: () => <div>{/* ... */}</div>
-  }
+    return {
+        metadata: {
+            title: 'My Page',
+            description: '...',
+        },
+        default: () => <div>{/* ... */}</div>,
+    }
 }
 ```
 
@@ -115,11 +115,11 @@ import { Image } from 'meact/ui/Image'
 export const revalidate = 60 // 60초마다 재검증
 
 export const BlogPost = async ({ params }) => {
-  const post = await fetchPost(params.id)
+    const post = await fetchPost(params.id)
 
-  return {
-    default: () => <article>{/* ... */}</article>
-  }
+    return {
+        default: () => <article>{/* ... */}</article>,
+    }
 }
 ```
 
@@ -128,14 +128,14 @@ export const BlogPost = async ({ params }) => {
 ```tsx
 // pages/api/users/[id].ts
 export const GET = async (request: Request, { params }) => {
-  const user = await db.user.findById(params.id)
-  return Response.json(user)
+    const user = await db.user.findById(params.id)
+    return Response.json(user)
 }
 
 export const POST = async (request: Request) => {
-  const body = await request.json()
-  const user = await db.user.create(body)
-  return Response.json(user, { status: 201 })
+    const body = await request.json()
+    const user = await db.user.create(body)
+    return Response.json(user, { status: 201 })
 }
 ```
 
@@ -149,15 +149,15 @@ MEACT_PUBLIC_API_URL=https://api.com     # 클라이언트에서 사용 가능
 
 ```tsx
 // 서버 컴포넌트
-const secret = process.env.SECRET_KEY              // 서버 전용
-const apiUrl = process.env.MEACT_PUBLIC_API_URL   // 서버 + 클라이언트
+const secret = process.env.SECRET_KEY // 서버 전용
+const apiUrl = process.env.MEACT_PUBLIC_API_URL // 서버 + 클라이언트
 ```
 
 ## 요구사항
 
-- **Bun** ≥ 1.3.0
-- **React** 19
-- **TypeScript** 5
+-   **Bun** ≥ 1.3.0
+-   **React** 19
+-   **TypeScript** 5
 
 ## 라이선스
 
@@ -165,4 +165,4 @@ MIT
 
 ## 링크
 
-- [GitHub](https://github.com/B-HS/Meact)
+-   [GitHub](https://github.com/B-HS/Meact)

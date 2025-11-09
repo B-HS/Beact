@@ -6,20 +6,28 @@ import { wrapServerOnlyCode } from './transform'
 import { getPublicEnvVars } from '../config/env'
 import type { BunPlugin } from 'bun'
 
-const bundleCache = new Map<string, string>()
+const bundleCache = new Map<string, { outputDir: string; mainScript: string }>()
 
 const generateBundleId = (pathname: string) => {
     return createHash('md5').update(pathname).digest('hex')
 }
 
-export const createClientBundle = async (layoutPaths: string[], pagePath: string, rootDir: string, errorPath?: string, pathname?: string, loadingPath?: string) => {
+export const createClientBundle = async (
+    layoutPaths: string[],
+    pagePath: string,
+    rootDir: string,
+    errorPath?: string,
+    pathname?: string,
+    loadingPath?: string,
+) => {
     if (!pathname) {
         pathname = pagePath
     }
     const bundleId = generateBundleId(pathname)
 
     if (bundleCache.has(bundleId)) {
-        return { bundleId, bundleCode: bundleCache.get(bundleId)! }
+        const cached = bundleCache.get(bundleId)!
+        return { bundleId, outputDir: cached.outputDir, mainScript: cached.mainScript }
     }
 
     const cwd = rootDir
@@ -92,11 +100,17 @@ export const createClientBundle = async (layoutPaths: string[], pagePath: string
     }
 
     try {
+        const outputDir = join(cwd, '.meact-bundles', bundleId)
+        mkdirSync(outputDir, { recursive: true })
+
         const result = await Bun.build({
             entrypoints: [tempFile],
             target: 'browser',
             format: 'esm',
             minify: true,
+            splitting: true,
+            outdir: outputDir,
+            naming: '[name]-[hash].[ext]',
             plugins: [serverOnlyPlugin],
             define: {
                 'process.env.NODE_ENV': '"production"',
@@ -108,23 +122,23 @@ export const createClientBundle = async (layoutPaths: string[], pagePath: string
             throw new Error('Bundle failed')
         }
 
-        const output = result.outputs[0]
-        if (!output) {
-            throw new Error('No bundle output generated')
+        const mainOutput = result.outputs.find((o) => o.path.includes(bundleId))
+        if (!mainOutput) {
+            throw new Error('No main bundle output generated')
         }
 
-        const bundleCode = await output.text()
-        bundleCache.set(bundleId, bundleCode)
+        const mainScript = mainOutput.path.split('/').pop()!
+        bundleCache.set(bundleId, { outputDir, mainScript })
 
         rmSync(tempDir, { recursive: true, force: true })
 
-        return { bundleId, bundleCode }
+        return { bundleId, outputDir, mainScript }
     } catch (error) {
         rmSync(tempDir, { recursive: true, force: true })
         throw error
     }
 }
 
-export const getBundleFromCache = (bundleId: string) => {
-    return bundleCache.get(bundleId)
+export const getBundleOutputDir = (bundleId: string) => {
+    return bundleCache.get(bundleId)?.outputDir
 }

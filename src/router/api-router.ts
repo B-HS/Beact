@@ -37,10 +37,7 @@ const matchApiRoute = (pathname: string, routes: ApiRouteMap): { route: string; 
     return null
 }
 
-export const handleApiRequest = async (
-    request: Request,
-    routes: ApiRouteMap
-): Promise<Response> => {
+export const handleApiRequest = async (request: Request, routes: ApiRouteMap): Promise<Response> => {
     const url = new URL(request.url)
     const pathname = url.pathname
 
@@ -49,7 +46,7 @@ export const handleApiRequest = async (
     if (!matched) {
         return new Response(JSON.stringify({ error: 'Not Found' }), {
             status: 404,
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' },
         })
     }
 
@@ -57,12 +54,12 @@ export const handleApiRequest = async (
     if (!routeInfo) {
         return new Response(JSON.stringify({ error: 'Not Found' }), {
             status: 404,
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' },
         })
     }
 
     try {
-        const module = await import(routeInfo.filePath) as ApiRouteModule
+        const module = (await import(routeInfo.filePath)) as ApiRouteModule
         const method = request.method as HttpMethod
         const handler = module[method]
 
@@ -71,8 +68,8 @@ export const handleApiRequest = async (
                 status: 405,
                 headers: {
                     'Content-Type': 'application/json',
-                    'Allow': Object.keys(module).join(', ')
-                }
+                    'Allow': Object.keys(module).join(', '),
+                },
             })
         }
 
@@ -80,12 +77,15 @@ export const handleApiRequest = async (
         return response
     } catch (error) {
         console.error('API Route Error:', error)
-        return new Response(JSON.stringify({
-            error: 'Internal Server Error',
-            message: error instanceof Error ? error.message : 'Unknown error'
-        }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' }
-        })
+        return new Response(
+            JSON.stringify({
+                error: 'Internal Server Error',
+                message: error instanceof Error ? error.message : 'Unknown error',
+            }),
+            {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' },
+            },
+        )
     }
 }

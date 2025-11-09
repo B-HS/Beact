@@ -23,7 +23,7 @@ export const loadUserProxy = async (rootDir: string): Promise<ProxyHandler[]> =>
 
     try {
         const proxyPath = join(rootDir, 'proxy')
-        const proxyModule = await import(proxyPath) as any
+        const proxyModule = (await import(proxyPath)) as any
         if (proxyModule.proxy) {
             proxyCache = [proxyModule.proxy]
             return proxyCache

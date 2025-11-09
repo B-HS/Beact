@@ -57,7 +57,7 @@ console.log('✅ Ready at http://localhost:' + config.port)
 
     if (!result.success) {
         console.error('❌ Server build failed')
-        result.logs.forEach(log => console.error(log))
+        result.logs.forEach((log) => console.error(log))
         throw new Error('Build failed')
     }
 
@@ -130,8 +130,8 @@ console.log('✅ Ready at http://localhost:' + config.port)
         name: 'meact-standalone',
         type: 'module',
         scripts: {
-            start: 'NODE_ENV=production bun server-entry.js'
-        }
+            start: 'NODE_ENV=production bun server-entry.js',
+        },
     }
     writeFileSync(join(standaloneDir, 'package.json'), JSON.stringify(packageJson, null, 2))
 

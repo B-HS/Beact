@@ -4,10 +4,7 @@ interface CachedPage {
     revalidateAfter: number | false
 }
 
-type CacheResult =
-    | { type: 'fresh'; html: string }
-    | { type: 'stale'; html: string }
-    | { type: 'miss' }
+type CacheResult = { type: 'fresh'; html: string } | { type: 'stale'; html: string } | { type: 'miss' }
 
 class ISRCache {
     private cache = new Map<string, CachedPage>()
@@ -49,7 +46,7 @@ class ISRCache {
         this.cache.set(key, {
             html,
             timestamp: Date.now(),
-            revalidateAfter: revalidate
+            revalidateAfter: revalidate,
         })
     }
 
@@ -65,13 +62,13 @@ class ISRCache {
         this.revalidating.add(key)
 
         renderFn()
-            .then(html => {
+            .then((html) => {
                 const existingEntry = this.cache.get(key)
                 if (existingEntry) {
                     this.set(key, html, existingEntry.revalidateAfter)
                 }
             })
-            .catch(error => {
+            .catch((error) => {
                 console.error(`[ISR] Revalidation failed for ${key}:`, error)
             })
             .finally(() => {
@@ -80,6 +77,4 @@ class ISRCache {
     }
 }
 
-export const isrCache = new ISRCache(
-    parseInt(process.env.MEACT_ISR_MAX_CACHE_SIZE || '1000', 10)
-)
+export const isrCache = new ISRCache(parseInt(process.env.MEACT_ISR_MAX_CACHE_SIZE || '1000', 10))

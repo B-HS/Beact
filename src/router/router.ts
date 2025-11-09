@@ -45,11 +45,7 @@ const matchRoute = (pathname: string, routes: ReturnType<typeof scanPages>) => {
     return null
 }
 
-export const collectMetadata = async (
-    layouts: ComponentFactory[],
-    page: ComponentFactory,
-    pageProps: PageProps = {}
-): Promise<Metadata[]> => {
+export const collectMetadata = async (layouts: ComponentFactory[], page: ComponentFactory, pageProps: PageProps = {}): Promise<Metadata[]> => {
     const metadataList: Metadata[] = []
 
     for (const layout of layouts) {
@@ -89,7 +85,7 @@ export const getNotFoundComponent = async (pathname: string, config: MeactConfig
                 layouts: layoutModules,
                 notFound: notFoundModule,
                 layoutPaths: routeInfo.layouts,
-                notFoundPath: routeInfo.notFound
+                notFoundPath: routeInfo.notFound,
             }
         }
     }
@@ -109,7 +105,7 @@ export const getNotFoundComponent = async (pathname: string, config: MeactConfig
         layouts: layoutModules,
         notFound: defaultNotFoundModule,
         layoutPaths: rootRoute?.layouts || [],
-        notFoundPath: '../ui/not-found'
+        notFoundPath: '../ui/not-found',
     }
 }
 
@@ -166,7 +162,7 @@ export const buildComponentTree = async (
     layouts: ComponentFactory[],
     page: ComponentFactory,
     pageProps: PageProps = {},
-    metadata: Metadata[] = []
+    metadata: Metadata[] = [],
 ): Promise<ReactElement> => {
     const pageFactory = await page.default(pageProps)
     ssrCache.set(page, pageFactory)
@@ -185,7 +181,7 @@ export const buildComponentTree = async (
         const layoutFactory = await layout.default({
             children: tree,
             ...pageProps,
-            ...(isRootLayout && { metadata })
+            ...(isRootLayout && { metadata }),
         })
         ssrCache.set(layout, layoutFactory)
         tree = await layoutFactory.default()

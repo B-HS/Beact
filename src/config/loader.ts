@@ -7,7 +7,7 @@ export const loadConfig = async (rootDir = process.cwd()): Promise<MeactConfig> 
         pagesDir: join(rootDir, 'pages'),
         publicDir: join(rootDir, 'public'),
         cacheDir: join(rootDir, '.meact/cache'),
-        port: 3000
+        port: 3000,
     }
 
     try {

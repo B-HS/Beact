@@ -28,7 +28,7 @@ export const dev = async () => {
     Bun.serve({
         port: config.port,
         fetch: (request) => fetch(request, config),
-        development: true
+        development: true,
     })
 
     console.log(`✅ Ready at http://localhost:${config.port}`)
