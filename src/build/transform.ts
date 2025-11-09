@@ -9,19 +9,25 @@ const generateCacheKey = (filename: string, lineNumber: number, varName: string)
 export const wrapServerOnlyCode = (code: string, filename: string): string => {
     const sourceFile = ts.createSourceFile(filename, code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
 
-    let needsImport = false
-
     const transformer: ts.TransformerFactory<ts.SourceFile> = (context) => {
         return (sourceFile) => {
             const visitor = (node: ts.Node): ts.Node => {
-                if (ts.isArrowFunction(node) && node.modifiers?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword)) {
-                    needsImport = true
-                    return transformAsyncArrowFunction(node, context, filename, sourceFile)
+                if (ts.isArrowFunction(node)) {
+                    const isAsync = node.modifiers?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword)
+                    const hasDynamicContent = containsDynamicValue(node) || containsProcessEnv(node) || containsAwait(node) || containsFetchCall(node)
+
+                    if (isAsync || hasDynamicContent) {
+                        return transformAsyncArrowFunction(node, context, filename, sourceFile)
+                    }
                 }
 
-                if (ts.isFunctionDeclaration(node) && node.modifiers?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword)) {
-                    needsImport = true
-                    return transformAsyncFunction(node, context, filename, sourceFile)
+                if (ts.isFunctionDeclaration(node)) {
+                    const isAsync = node.modifiers?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword)
+                    const hasDynamicContent = containsDynamicValue(node) || containsProcessEnv(node) || containsAwait(node) || containsFetchCall(node)
+
+                    if (isAsync || hasDynamicContent) {
+                        return transformAsyncFunction(node, context, filename, sourceFile)
+                    }
                 }
 
                 return ts.visitEachChild(node, visitor, context)
@@ -33,13 +39,8 @@ export const wrapServerOnlyCode = (code: string, filename: string): string => {
 
     const result = ts.transform(sourceFile, [transformer])
     const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed })
-    let transformed = printer.printFile(result.transformed[0] as ts.SourceFile)
+    const transformed = printer.printFile(result.transformed[0] as ts.SourceFile)
     result.dispose()
-
-    if (needsImport) {
-        const importStatement = `import { setPromiseCacheValue } from '../context/promise'\n`
-        transformed = importStatement + transformed
-    }
 
     return transformed
 }
@@ -60,7 +61,7 @@ const transformAsyncArrowFunction = (
     const otherStatements: ts.Statement[] = []
 
     for (const statement of node.body.statements) {
-        if (ts.isVariableStatement(statement) && (containsAwait(statement) || containsProcessEnv(statement) || containsDynamicValue(statement))) {
+        if (ts.isVariableStatement(statement) && (containsAwait(statement) || containsProcessEnv(statement) || containsDynamicValue(statement) || containsFetchCall(statement))) {
             const result = splitVariableDeclaration(statement, filename, sourceFile)
             hoistedDeclarations.push(...result.declarations)
             awaitStatements.push(...result.assignments)
@@ -72,7 +73,7 @@ const transformAsyncArrowFunction = (
         }
     }
 
-    if (awaitStatements.length === 0) {
+    if (awaitStatements.length === 0 && cacheStores.length === 0) {
         return node
     }
 
@@ -87,9 +88,16 @@ const transformAsyncArrowFunction = (
 
     const newBody = ts.factory.createBlock([...hoistedDeclarations, isServerCheck, ...otherStatements], true)
 
+    const asyncModifier = ts.factory.createModifier(ts.SyntaxKind.AsyncKeyword)
+    const modifiers = node.modifiers?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword)
+        ? node.modifiers
+        : node.modifiers
+            ? [...node.modifiers, asyncModifier]
+            : [asyncModifier]
+
     return ts.factory.updateArrowFunction(
         node,
-        node.modifiers,
+        modifiers,
         node.typeParameters,
         node.parameters,
         node.type,
@@ -114,7 +122,7 @@ const transformAsyncFunction = (
     const otherStatements: ts.Statement[] = []
 
     for (const statement of node.body.statements) {
-        if (ts.isVariableStatement(statement) && (containsAwait(statement) || containsProcessEnv(statement) || containsDynamicValue(statement))) {
+        if (ts.isVariableStatement(statement) && (containsAwait(statement) || containsProcessEnv(statement) || containsDynamicValue(statement) || containsFetchCall(statement))) {
             const result = splitVariableDeclaration(statement, filename, sourceFile)
             hoistedDeclarations.push(...result.declarations)
             awaitStatements.push(...result.assignments)
@@ -126,7 +134,7 @@ const transformAsyncFunction = (
         }
     }
 
-    if (awaitStatements.length === 0) {
+    if (awaitStatements.length === 0 && cacheStores.length === 0) {
         return node
     }
 
@@ -141,9 +149,16 @@ const transformAsyncFunction = (
 
     const newBody = ts.factory.createBlock([...hoistedDeclarations, isServerCheck, ...otherStatements], true)
 
+    const asyncModifier = ts.factory.createModifier(ts.SyntaxKind.AsyncKeyword)
+    const modifiers = node.modifiers?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword)
+        ? node.modifiers
+        : node.modifiers
+            ? [...node.modifiers, asyncModifier]
+            : [asyncModifier]
+
     return ts.factory.updateFunctionDeclaration(
         node,
-        node.modifiers,
+        modifiers,
         node.asteriskToken,
         node.name,
         node.typeParameters,
@@ -212,20 +227,27 @@ const splitVariableDeclaration = (
             )
         )
 
+        const needsAwait = containsAwait(declaration) || containsFetchCall(declaration)
+        const assignmentExpression = ts.factory.createBinaryExpression(
+            varName,
+            ts.factory.createToken(ts.SyntaxKind.EqualsToken),
+            needsAwait ? ts.factory.createAwaitExpression(declaration.initializer) : declaration.initializer
+        )
+
         assignments.push(
-            ts.factory.createExpressionStatement(
-                ts.factory.createBinaryExpression(
-                    varName,
-                    ts.factory.createToken(ts.SyntaxKind.EqualsToken),
-                    declaration.initializer
-                )
-            )
+            ts.factory.createExpressionStatement(assignmentExpression)
         )
 
         cacheStores.push(
             ts.factory.createExpressionStatement(
                 ts.factory.createCallExpression(
-                    ts.factory.createIdentifier('setPromiseCacheValue'),
+                    ts.factory.createPropertyAccessExpression(
+                        ts.factory.createAsExpression(
+                            ts.factory.createIdentifier('globalThis'),
+                            ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)
+                        ),
+                        ts.factory.createIdentifier('__meactSetPromiseCacheValue')
+                    ),
                     undefined,
                     [ts.factory.createStringLiteral(cacheKey), varName]
                 )
@@ -308,4 +330,22 @@ const containsDynamicValue = (node: ts.Node): boolean => {
 
     visitor(node)
     return hasDynamicValue
+}
+
+const containsFetchCall = (node: ts.Node): boolean => {
+    let hasFetch = false
+
+    const visitor = (node: ts.Node): void => {
+        if (ts.isCallExpression(node)) {
+            if (ts.isIdentifier(node.expression) && node.expression.text === 'fetch') {
+                hasFetch = true
+                return
+            }
+        }
+
+        ts.forEachChild(node, visitor)
+    }
+
+    visitor(node)
+    return hasFetch
 }

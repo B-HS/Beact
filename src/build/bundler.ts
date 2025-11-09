@@ -18,9 +18,9 @@ export const createClientBundle = async (layoutPaths: string[], pagePath: string
     }
     const bundleId = generateBundleId(pathname)
 
-    // if (bundleCache.has(bundleId)) {
-    //     return { bundleId, bundleCode: bundleCache.get(bundleId)! }
-    // }
+    if (bundleCache.has(bundleId)) {
+        return { bundleId, bundleCode: bundleCache.get(bundleId)! }
+    }
 
     const cwd = rootDir
     const pagesDir = join(cwd, 'pages')
@@ -61,7 +61,14 @@ export const createClientBundle = async (layoutPaths: string[], pagePath: string
                 }
             })
 
-            build.onLoad({ filter: /context\/promise/ }, async (args) => {
+            build.onResolve({ filter: /^meact\/context\/promise$/ }, () => {
+                return {
+                    path: join(cwd, 'node_modules', 'meact', 'dist', 'context', 'promise.js'),
+                    namespace: 'context-promise-stub',
+                }
+            })
+
+            build.onLoad({ filter: /.*/, namespace: 'context-promise-stub' }, async () => {
                 return {
                     contents: `
                         export const promiseStorage = null;

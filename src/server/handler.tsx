@@ -135,6 +135,13 @@ export const fetch = async (request: Request, config: MeactConfig) => {
         return handleApiRequest(request, apiRoutesCache)
     }
 
+    ;(globalThis as any).__meactSetPromiseCacheValue = (key: string, value: any) => {
+        const store = promiseStorage.getStore()
+        if (store) {
+            store.set(key, value)
+        }
+    }
+
     const cache = new Map<string, any>()
 
     return promiseStorage.run(cache, async () => {

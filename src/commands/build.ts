@@ -1,6 +1,7 @@
 import { loadConfig } from '../config'
-import { mkdirSync, writeFileSync, cpSync, existsSync, rmSync, readFileSync } from 'fs'
+import { mkdirSync, writeFileSync, cpSync, existsSync, rmSync, readFileSync, readdirSync, statSync } from 'fs'
 import { join } from 'path'
+import { wrapServerOnlyCode } from '../build/transform'
 
 export const build = async () => {
     const rootDir = process.cwd()
@@ -62,8 +63,28 @@ console.log('✅ Ready at http://localhost:' + config.port)
 
     rmSync(serverEntryPath)
 
-    console.log('📄 Copying pages...')
-    cpSync(config.pagesDir, join(standaloneDir, 'pages'), { recursive: true })
+    console.log('📄 Copying and transforming pages...')
+    const copyAndTransformPages = (srcDir: string, destDir: string) => {
+        mkdirSync(destDir, { recursive: true })
+        const entries = readdirSync(srcDir)
+
+        for (const entry of entries) {
+            const srcPath = join(srcDir, entry)
+            const destPath = join(destDir, entry)
+            const stat = statSync(srcPath)
+
+            if (stat.isDirectory()) {
+                copyAndTransformPages(srcPath, destPath)
+            } else if (entry.endsWith('.tsx') || entry.endsWith('.ts')) {
+                const code = readFileSync(srcPath, 'utf-8')
+                const transformed = wrapServerOnlyCode(code, srcPath)
+                writeFileSync(destPath, transformed)
+            } else {
+                cpSync(srcPath, destPath)
+            }
+        }
+    }
+    copyAndTransformPages(config.pagesDir, join(standaloneDir, 'pages'))
 
     const componentsDir = join(rootDir, 'components')
     if (existsSync(componentsDir)) {
@@ -96,6 +117,7 @@ console.log('✅ Ready at http://localhost:' + config.port)
                     cpSync(depPath, join(standaloneDir, 'node_modules', dep), {
                         recursive: true,
                         verbatimSymlinks: true,
+                        force: true,
                     })
                 } catch (err) {
                     console.warn(`  ⚠️  Failed to copy ${dep}: ${err instanceof Error ? err.message : String(err)}`)
