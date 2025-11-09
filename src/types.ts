@@ -29,10 +29,18 @@ export interface ComponentFactory {
 
 export type ProxyHandler = (request: Request) => Request | Response | Promise<Request | Response>
 
+export interface BundleContext {
+    rootDir: string
+    pagesDir: string
+    cacheDir: string
+    bundleId: string
+    pathname: string
+}
+
 export interface BunactPlugin {
     name: string
     setup?: (config: BunactConfig) => void | Promise<void>
-    bundlePlugin?: any
+    bundlePlugin?: import('bun').BunPlugin | ((context: BundleContext) => import('bun').BunPlugin)
 }
 
 export interface BunactConfig {

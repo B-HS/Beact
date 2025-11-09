@@ -5,6 +5,7 @@ import { createHash } from 'crypto'
 import { wrapServerOnlyCode, hasUseClientDirective } from './transform'
 import { getPublicEnvVars } from '../config/env'
 import type { BunPlugin } from 'bun'
+import type { ResolvedBunactConfig, BundleContext } from '../types'
 
 const bundleCache = new Map<string, { outputDir: string; mainScript: string }>()
 
@@ -15,7 +16,7 @@ const generateBundleId = (pathname: string) => {
 export const createClientBundle = async (
     layoutPaths: string[],
     pagePath: string,
-    rootDir: string,
+    config: ResolvedBunactConfig,
     errorPath?: string,
     pathname?: string,
     loadingPath?: string,
@@ -30,7 +31,7 @@ export const createClientBundle = async (
         return { bundleId, outputDir: cached.outputDir, mainScript: cached.mainScript }
     }
 
-    const cwd = rootDir
+    const cwd = config.rootDir
     const pagesDir = join(cwd, 'pages')
 
     const resolveImportPath = (path: string) => {
@@ -115,6 +116,26 @@ export const createClientBundle = async (
         },
     }
 
+    const bundleContext: BundleContext = {
+        rootDir: config.rootDir,
+        pagesDir: config.pagesDir,
+        cacheDir: config.cacheDir,
+        bundleId,
+        pathname: pathname || pagePath,
+    }
+
+    const userPlugins =
+        config.plugins
+            ?.map((p) => {
+                if (!p.bundlePlugin) return null
+
+                if (typeof p.bundlePlugin === 'function') {
+                    return p.bundlePlugin(bundleContext)
+                }
+                return p.bundlePlugin
+            })
+            .filter((p): p is BunPlugin => p !== null) ?? []
+
     try {
         const outputDir = join(cwd, '.bunact-bundles', bundleId)
         mkdirSync(outputDir, { recursive: true })
@@ -127,7 +148,7 @@ export const createClientBundle = async (
             splitting: true,
             outdir: outputDir,
             naming: '[name]-[hash].[ext]',
-            plugins: [serverOnlyPlugin],
+            plugins: [serverOnlyPlugin, ...userPlugins],
             define: {
                 'process.env.NODE_ENV': '"production"',
                 ...getPublicEnvVars(),

@@ -166,7 +166,7 @@ export const fetch = async (request: Request, config: ResolvedBunactConfig) => {
                 const pageProps: PageProps = { ...basePageProps, params: {} }
                 const notFoundTree = await buildComponentTree(layouts, notFound, pageProps)
 
-                const { bundleId, mainScript } = await createClientBundle(layoutPaths, notFoundPath, config.rootDir, undefined, pathname)
+                const { bundleId, mainScript } = await createClientBundle(layoutPaths, notFoundPath, config, undefined, pathname)
 
                 const promiseCache = Object.fromEntries(cache.entries())
                 const serializedCache = JSON.stringify(promiseCache)
@@ -192,7 +192,7 @@ export const fetch = async (request: Request, config: ResolvedBunactConfig) => {
         const { layouts, page, layoutPaths, pagePath, errorPath, loadingPath, params, metadata, revalidate } = routeComponents
         const pageProps: PageProps = { ...basePageProps, params }
 
-        const { bundleId, mainScript } = await createClientBundle(layoutPaths, pagePath, config.rootDir, errorPath, pathname, loadingPath)
+        const { bundleId, mainScript } = await createClientBundle(layoutPaths, pagePath, config, errorPath, pathname, loadingPath)
 
         const cacheKey = `${pathname}:${JSON.stringify(params)}`
         const cacheResult = isrCache.get(cacheKey)
