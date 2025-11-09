@@ -1,6 +1,6 @@
 {
     "name": "bunact",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "A lightweight React framework with SSR and SSG support",
     "keywords": [
         "react",

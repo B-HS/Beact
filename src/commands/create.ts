@@ -27,17 +27,19 @@ export const create = async (projectName?: string) => {
                     version: '1.0.0',
                     type: 'module',
                     scripts: {
-                        dev: 'bun --watch node_modules/@bunact/bunact/dist/commands/dev.js',
+                        dev: 'bunact dev',
+                        build: 'NODE_ENV=production bunact build',
+                        start: 'NODE_ENV=production bunact dev',
                     },
                     dependencies: {
-                        '@bunact/core': 'workspace:*',
+                        'bunact': 'latest',
                         'react': '^19',
                         'react-dom': '^19',
                     },
                     devDependencies: {
+                        '@types/bun': 'latest',
                         '@types/react': '^19',
                         '@types/react-dom': '^19',
-                        'typescript': '^5',
                     },
                 },
                 null,
@@ -49,12 +51,11 @@ export const create = async (projectName?: string) => {
             join(projectPath, 'tsconfig.json'),
             JSON.stringify(
                 {
-                    extends: 'feconfig-bhs/tsconfig.json',
                     compilerOptions: {
                         jsx: 'react',
                         jsxImportSource: 'react',
-                        lib: ['ES2023', 'DOM', 'DOM.Iterable'],
-                        target: 'ES2022',
+                        lib: ['ESNext', 'DOM', 'DOM.Iterable'],
+                        target: 'ESNext',
                         module: 'ESNext',
                         moduleResolution: 'bundler',
                         resolveJsonModule: true,
