@@ -1,5 +1,4 @@
 <center><img src="./bunact.png" width="200px" alt="bunact logo" /></center>
-<center><sub>(mehhh)</sub></center>
 
 # Bunact
 
