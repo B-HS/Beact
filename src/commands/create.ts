@@ -52,7 +52,7 @@ export const create = async (projectName?: string) => {
             JSON.stringify(
                 {
                     compilerOptions: {
-                        jsx: 'react',
+                        jsx: 'react-jsx',
                         jsxImportSource: 'react',
                         lib: ['ESNext', 'DOM', 'DOM.Iterable'],
                         target: 'ESNext',
@@ -100,8 +100,8 @@ dist
         await writeFile(
             join(projectPath, 'pages', 'layout.tsx'),
             `import type { ReactNode } from 'react'
-import type { Metadata } from '../types'
-import { generateMetatag } from '../metadata'
+import type { Metadata } from 'bunact/types'
+import { generateMetatag } from 'bunact/metadata'
 
 interface LayoutProps {
     children: ReactNode
@@ -133,7 +133,7 @@ export default Layout
 
         await writeFile(
             join(projectPath, 'pages', 'page.tsx'),
-            `import type { Metadata, PageProps } from '../types'
+            `import type { Metadata, PageProps } from 'bunact/types'
 
 const Home = async ({ params, searchParams }: PageProps) => {
     const metadata: Metadata[] = [
