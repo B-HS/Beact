@@ -1,5 +1,5 @@
 {
-    "name": "@beact/beact",
+    "name": "bunact",
     "version": "0.1.0",
     "description": "A lightweight React framework with SSR and SSG support",
     "keywords": [
@@ -13,7 +13,7 @@
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "bin": {
-        "beact": "./dist/cli.js"
+        "bunact": "./dist/cli.js"
     },
     "exports": {
         ".": {
@@ -95,7 +95,7 @@
         "bun": ">=1.0.0"
     },
     "scripts": {
-        "preinstall": "node -e \"if (process.env.npm_execpath.indexOf('bun') === -1) throw new Error('Please use Bun to install dependencies: bun install')\"",
+        "preinstall": "node -e \"const userAgent = process.env.npm_config_user_agent || ''; if (!userAgent.includes('bun') && !process.versions.bun) throw new Error('Please use Bun to install dependencies: bun install')\"",
         "dev": "cd examples/basic && bun --watch ../../src/commands/dev.ts",
         "build": "rm -rf dist && bunx tsc",
         "prepublishOnly": "bun run build",
@@ -104,7 +104,7 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/B-HS/Beact"
+        "url": "https://github.com/B-HS/Bunact"
     },
     "author": "HyunseokByun"
 }

@@ -298,7 +298,7 @@ const splitVariableDeclaration = (
                 ts.factory.createPropertyAccessChain(
                     ts.factory.createIdentifier('window'),
                     ts.factory.createToken(ts.SyntaxKind.QuestionDotToken),
-                    ts.factory.createIdentifier('__BEACT_PROMISE_CACHE__'),
+                    ts.factory.createIdentifier('__BUNACT_PROMISE_CACHE__'),
                 ),
                 ts.factory.createToken(ts.SyntaxKind.QuestionDotToken),
                 ts.factory.createStringLiteral(cacheKey),
@@ -334,7 +334,7 @@ const splitVariableDeclaration = (
                             ts.factory.createIdentifier('globalThis'),
                             ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword),
                         ),
-                        ts.factory.createIdentifier('__beactSetPromiseCacheValue'),
+                        ts.factory.createIdentifier('__bunactSetPromiseCacheValue'),
                     ),
                     undefined,
                     [ts.factory.createStringLiteral(cacheKey), varName],

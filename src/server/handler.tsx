@@ -4,7 +4,7 @@ import { createClientBundle, getBundleOutputDir } from '../build/bundler'
 import { promiseStorage } from '../context/promise'
 import { handleApiRequest, scanApiRoutes } from '../router'
 import { buildComponentTree, getNotFoundComponent, getRouteComponents } from '../router/router'
-import type { ResolvedBeactConfig, PageProps, SerializablePageProps } from '../types'
+import type { ResolvedBunactConfig, PageProps, SerializablePageProps } from '../types'
 import { handleImageRequest } from './image-handler'
 import { isrCache } from './isr-cache'
 import { loadUserProxy, runProxyChain } from './proxy'
@@ -89,7 +89,7 @@ const serializePageProps = (pageProps: PageProps): SerializablePageProps => {
     }
 }
 
-export const fetch = async (request: Request, config: ResolvedBeactConfig) => {
+export const fetch = async (request: Request, config: ResolvedBunactConfig) => {
     if (!renderToReadableStream) {
         const reactDomServerPath = `${config.rootDir}/node_modules/react-dom/server`
         const reactDomServer = await import(reactDomServerPath)
@@ -108,7 +108,7 @@ export const fetch = async (request: Request, config: ResolvedBeactConfig) => {
     const url = new URL(request.url)
     const pathname = url.pathname
 
-    if (pathname === '/.beact/image') {
+    if (pathname === '/.bunact/image') {
         return handleImageRequest(request, config.cacheDir)
     }
 
@@ -117,8 +117,8 @@ export const fetch = async (request: Request, config: ResolvedBeactConfig) => {
         return staticResponse
     }
 
-    if (pathname.startsWith('/.beact/') && pathname.endsWith('.js')) {
-        const parts = pathname.replace('/.beact/', '').split('/')
+    if (pathname.startsWith('/.bunact/') && pathname.endsWith('.js')) {
+        const parts = pathname.replace('/.bunact/', '').split('/')
         const bundleId = parts[0]!
         const filename = parts.slice(1).join('/')
 
@@ -144,7 +144,7 @@ export const fetch = async (request: Request, config: ResolvedBeactConfig) => {
         return handleApiRequest(request, apiRoutesCache)
     }
 
-    ;(globalThis as any).__beactSetPromiseCacheValue = (key: string, value: any) => {
+    ;(globalThis as any).__bunactSetPromiseCacheValue = (key: string, value: any) => {
         const store = promiseStorage.getStore()
         if (store) {
             store.set(key, value)
@@ -173,10 +173,10 @@ export const fetch = async (request: Request, config: ResolvedBeactConfig) => {
                 const serializedPageProps = JSON.stringify(serializePageProps(pageProps))
 
                 const isDev = process.env.NODE_ENV !== 'production'
-                const scripts = isDev ? ['/.beact/hmr.js', `/.beact/${bundleId}/${mainScript}`] : [`/.beact/${bundleId}/${mainScript}`]
+                const scripts = isDev ? ['/.bunact/hmr.js', `/.bunact/${bundleId}/${mainScript}`] : [`/.bunact/${bundleId}/${mainScript}`]
 
                 const stream = await renderToReadableStream(notFoundTree, {
-                    bootstrapScriptContent: `window.__BEACT_PROMISE_CACHE__=${serializedCache};window.__BEACT_PAGE_PROPS__=${serializedPageProps}`,
+                    bootstrapScriptContent: `window.__BUNACT_PROMISE_CACHE__=${serializedCache};window.__BUNACT_PAGE_PROPS__=${serializedPageProps}`,
                     bootstrapModules: scripts,
                 })
 
@@ -205,7 +205,7 @@ export const fetch = async (request: Request, config: ResolvedBeactConfig) => {
 
         if (cacheResult.type === 'stale') {
             const isDev = process.env.NODE_ENV !== 'production'
-            const scripts = isDev ? ['/.beact/hmr.js', `/.beact/${bundleId}/${mainScript}`] : [`/.beact/${bundleId}/${mainScript}`]
+            const scripts = isDev ? ['/.bunact/hmr.js', `/.bunact/${bundleId}/${mainScript}`] : [`/.bunact/${bundleId}/${mainScript}`]
 
             isrCache.startRevalidation(cacheKey, async () => {
                 const renderCache = new Map<string, any>()
@@ -215,7 +215,7 @@ export const fetch = async (request: Request, config: ResolvedBeactConfig) => {
                     const serializedCache = JSON.stringify(promiseCache)
                     const serializedPageProps = JSON.stringify(serializePageProps(pageProps))
                     const stream = await renderToReadableStream(componentTree, {
-                        bootstrapScriptContent: `window.__BEACT_PROMISE_CACHE__=${serializedCache};window.__BEACT_PAGE_PROPS__=${serializedPageProps}`,
+                        bootstrapScriptContent: `window.__BUNACT_PROMISE_CACHE__=${serializedCache};window.__BUNACT_PAGE_PROPS__=${serializedPageProps}`,
                         bootstrapModules: scripts,
                     })
                     return await new Response(stream).text()
@@ -234,10 +234,10 @@ export const fetch = async (request: Request, config: ResolvedBeactConfig) => {
         const serializedPageProps = JSON.stringify(serializePageProps(pageProps))
 
         const isDev = process.env.NODE_ENV !== 'production'
-        const scripts = isDev ? ['/.beact/hmr.js', `/.beact/${bundleId}/${mainScript}`] : [`/.beact/${bundleId}/${mainScript}`]
+        const scripts = isDev ? ['/.bunact/hmr.js', `/.bunact/${bundleId}/${mainScript}`] : [`/.bunact/${bundleId}/${mainScript}`]
 
         const stream = await renderToReadableStream(componentTree, {
-            bootstrapScriptContent: `window.__BEACT_PROMISE_CACHE__=${serializedCache};window.__BEACT_PAGE_PROPS__=${serializedPageProps}`,
+            bootstrapScriptContent: `window.__BUNACT_PROMISE_CACHE__=${serializedCache};window.__BUNACT_PAGE_PROPS__=${serializedPageProps}`,
             bootstrapModules: scripts,
         })
 

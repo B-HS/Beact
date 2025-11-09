@@ -2,7 +2,7 @@ export const createHydrateScript = (layoutPaths: string[], pagePath: string, err
     const layoutImports = layoutPaths.map((path, index) => `import Layout${index} from '${path}'`).join('\n')
 
     const errorImport = errorPath ? `import ErrorComponent from '${errorPath}'` : ''
-    const errorBoundaryImport = errorPath ? `import { ErrorBoundary } from 'beact/ui/error-boundary'` : ''
+    const errorBoundaryImport = errorPath ? `import { ErrorBoundary } from 'bunact/ui/error-boundary'` : ''
 
     const loadingImport = loadingPath ? `import LoadingComponent from '${loadingPath}'` : ''
     const suspenseImport = loadingPath ? `import { Suspense, createElement } from 'react'` : errorPath ? `import { createElement } from 'react'` : ''
@@ -13,7 +13,7 @@ export const createHydrateScript = (layoutPaths: string[], pagePath: string, err
 
     return `
 import { hydrateRoot } from 'react-dom/client'
-import { ssrCache } from 'beact/router'
+import { ssrCache } from 'bunact/router'
 ${suspenseImport}
 ${errorBoundaryImport}
 ${errorImport}
@@ -70,7 +70,7 @@ const createHeadersProxy = (headersRecord) => {
 
 ;(async () => {
   try {
-    const pageProps = window.__BEACT_PAGE_PROPS__ || {
+    const pageProps = window.__BUNACT_PAGE_PROPS__ || {
       params: {},
       searchParams: {},
       cookies: {},

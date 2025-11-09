@@ -1,10 +1,10 @@
 import { join } from 'path'
 import { existsSync } from 'fs'
-import type { BeactConfig, ResolvedBeactConfig } from '../types'
+import type { BunactConfig, ResolvedBunactConfig } from '../types'
 import { getConstants, defaultConstants } from './constants'
 
-export const loadConfig = async (rootDir = process.cwd()): Promise<ResolvedBeactConfig> => {
-    const defaults: BeactConfig = {
+export const loadConfig = async (rootDir = process.cwd()): Promise<ResolvedBunactConfig> => {
+    const defaults: BunactConfig = {
         rootDir,
         pagesDir: join(rootDir, defaultConstants.paths.pagesDir),
         publicDir: join(rootDir, defaultConstants.paths.publicDir),
@@ -12,9 +12,9 @@ export const loadConfig = async (rootDir = process.cwd()): Promise<ResolvedBeact
         port: defaultConstants.server.defaultPort,
     }
 
-    let userConfig: Partial<BeactConfig> = {}
+    let userConfig: Partial<BunactConfig> = {}
 
-    const possiblePaths = [join(rootDir, 'beact.config.ts'), join(rootDir, 'beact.config.js'), join(rootDir, 'beact.config.mjs')]
+    const possiblePaths = [join(rootDir, 'bunact.config.ts'), join(rootDir, 'bunact.config.js'), join(rootDir, 'bunact.config.mjs')]
 
     for (const configPath of possiblePaths) {
         if (existsSync(configPath)) {

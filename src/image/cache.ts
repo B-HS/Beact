@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { resolve } from 'path'
 import type { ImageFormat } from './types'
 
-const MAX_CACHE_SIZE = parseInt(process.env.BEACT_IMAGE_CACHE_SIZE || '500') * 1024 * 1024
+const MAX_CACHE_SIZE = parseInt(process.env.BUNACT_IMAGE_CACHE_SIZE || '500') * 1024 * 1024
 
 const getCacheDir = (cacheDir: string) => {
     return resolve(cacheDir, 'images')

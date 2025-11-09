@@ -1,6 +1,6 @@
 const connect = () => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const ws = new WebSocket(`${protocol}//${window.location.host}/.beact/hmr`)
+    const ws = new WebSocket(`${protocol}//${window.location.host}/.bunact/hmr`)
 
     ws.addEventListener('open', () => {
         console.log('[HMR] Connected')

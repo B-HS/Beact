@@ -29,36 +29,36 @@ export interface ComponentFactory {
 
 export type ProxyHandler = (request: Request) => Request | Response | Promise<Request | Response>
 
-export interface BeactPlugin {
+export interface BunactPlugin {
     name: string
-    setup?: (config: BeactConfig) => void | Promise<void>
+    setup?: (config: BunactConfig) => void | Promise<void>
     bundlePlugin?: any
 }
 
-export interface BeactConfig {
+export interface BunactConfig {
     rootDir?: string
     pagesDir?: string
     publicDir?: string
     cacheDir?: string
     port?: number
-    constants?: Partial<import('./config/constants').BeactConstants>
-    plugins?: BeactPlugin[]
+    constants?: Partial<import('./config/constants').BunactConstants>
+    plugins?: BunactPlugin[]
 }
 
-export interface ResolvedBeactConfig {
+export interface ResolvedBunactConfig {
     rootDir: string
     pagesDir: string
     publicDir: string
     cacheDir: string
     port: number
-    constants: import('./config/constants').BeactConstants
-    plugins?: BeactPlugin[]
+    constants: import('./config/constants').BunactConstants
+    plugins?: BunactPlugin[]
 }
 
 declare global {
     interface Window {
-        __BEACT_PROMISE_CACHE__?: Record<string, any>
-        __BEACT_PAGE_PROPS__?: SerializablePageProps
+        __BUNACT_PROMISE_CACHE__?: Record<string, any>
+        __BUNACT_PAGE_PROPS__?: SerializablePageProps
     }
 }
 

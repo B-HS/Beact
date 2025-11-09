@@ -7,11 +7,11 @@ export const build = async () => {
     const rootDir = process.cwd()
     const config = await loadConfig(rootDir)
 
-    console.log('Building Beact standalone server...')
+    console.log('Building Bunact standalone server...')
     console.log(`Project root: ${config.rootDir}`)
     console.log(`Pages directory: ${config.pagesDir}`)
 
-    const standaloneDir = join(rootDir, '.beact')
+    const standaloneDir = join(rootDir, '.bunact')
 
     if (existsSync(standaloneDir)) {
         rmSync(standaloneDir, { recursive: true, force: true })
@@ -20,19 +20,19 @@ export const build = async () => {
 
     console.log('Bundling server...')
 
-    const tempBeactDir = join(standaloneDir, 'node_modules/beact')
-    mkdirSync(tempBeactDir, { recursive: true })
-    cpSync(join(rootDir, 'node_modules/beact/dist'), join(tempBeactDir, 'dist'), { recursive: true, dereference: true })
-    cpSync(join(rootDir, 'node_modules/beact/package.json'), join(tempBeactDir, 'package.json'), { dereference: true })
+    const tempBunactDir = join(standaloneDir, 'node_modules/bunact')
+    mkdirSync(tempBunactDir, { recursive: true })
+    cpSync(join(rootDir, 'node_modules/bunact/dist'), join(tempBunactDir, 'dist'), { recursive: true, dereference: true })
+    cpSync(join(rootDir, 'node_modules/bunact/package.json'), join(tempBunactDir, 'package.json'), { dereference: true })
 
     const serverEntryCode = `
-import { fetch } from 'beact/server'
-import { loadConfig } from 'beact/config'
+import { fetch } from 'bunact/server'
+import { loadConfig } from 'bunact/config'
 
 const rootDir = import.meta.dir
 const config = await loadConfig(rootDir)
 
-console.log('Beact server starting on port ' + config.port + '...')
+console.log('Bunact server starting on port ' + config.port + '...')
 
 Bun.serve({
     port: config.port,
@@ -98,9 +98,9 @@ console.log('Ready at http://localhost:' + config.port)
         cpSync(publicDir, join(standaloneDir, 'public'), { recursive: true })
     }
 
-    const userConfigPath = join(rootDir, 'beact.config.ts')
+    const userConfigPath = join(rootDir, 'bunact.config.ts')
     if (existsSync(userConfigPath)) {
-        cpSync(userConfigPath, join(standaloneDir, 'beact.config.ts'))
+        cpSync(userConfigPath, join(standaloneDir, 'bunact.config.ts'))
     }
 
     console.log('Copying dependencies...')
@@ -127,7 +127,7 @@ console.log('Ready at http://localhost:' + config.port)
     }
 
     const packageJson = {
-        name: 'beact-standalone',
+        name: 'bunact-standalone',
         type: 'module',
         scripts: {
             start: 'NODE_ENV=production bun server-entry.js',
