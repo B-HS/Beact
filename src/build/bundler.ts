@@ -90,7 +90,7 @@ export const createClientBundle = async (
             })
 
             build.onLoad({ filter: /\.(tsx|ts)$/ }, async (args) => {
-                const code = await Bun.file(args.path).text()
+                let code = await Bun.file(args.path).text()
 
                 if (hasUseClientDirective(code)) {
                     const cleanCode = code.replace(/^["']use client["'];?\s*\n?/m, '')
@@ -101,9 +101,20 @@ export const createClientBundle = async (
                 }
 
                 if (args.path.includes('/pages/')) {
+                    const cssImports: string[] = []
+                    const importRegex = /import\s+['"](.*?\.css)['"]/g
+                    let match
+
+                    while ((match = importRegex.exec(code)) !== null) {
+                        cssImports.push(match[0])
+                    }
+
                     const transformed = wrapServerOnlyCode(code, args.path)
+
+                    const finalCode = cssImports.length > 0 ? `${cssImports.join('\n')}\n${transformed}` : transformed
+
                     return {
-                        contents: transformed,
+                        contents: finalCode,
                         loader: 'tsx',
                     }
                 }
