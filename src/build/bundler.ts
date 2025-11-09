@@ -5,7 +5,7 @@ import { createHash } from 'crypto'
 import { wrapServerOnlyCode, hasUseClientDirective } from './transform'
 import { getPublicEnvVars } from '../config/env'
 import type { BunPlugin } from 'bun'
-import type { ResolvedBunactConfig, BundleContext } from '../types'
+import type { ResolvedBunactConfig, BundleContext, CSSHandler, LoadHandler, ResolveHandler } from '../types'
 
 const bundleCache = new Map<string, { outputDir: string; mainScript: string }>()
 
@@ -136,6 +136,68 @@ export const createClientBundle = async (
             })
             .filter((p): p is BunPlugin => p !== null) ?? []
 
+    const cssInjectorPlugin: BunPlugin = {
+        name: 'css-injector-wrapper',
+        setup(build) {
+            const cssHandlers: CSSHandler[] = []
+            const nonCssHandlers: Array<LoadHandler | ResolveHandler> = []
+
+            for (const plugin of userPlugins) {
+                const mockBuild = {
+                    onLoad: (opts: { filter: RegExp; namespace?: string }, handler: CSSHandler['handler']) => {
+                        if (/\.css/.test(opts.filter.source)) {
+                            cssHandlers.push({ filter: opts.filter, handler })
+                        } else {
+                            nonCssHandlers.push({ type: 'load', opts, handler })
+                        }
+                    },
+                    onResolve: (opts: { filter: RegExp; namespace?: string }, handler: ResolveHandler['handler']) => {
+                        nonCssHandlers.push({ type: 'resolve', opts, handler })
+                    },
+                    onStart: () => {},
+                    onEnd: () => {},
+                    onBeforeParse: () => {},
+                    config: {},
+                    module: () => {},
+                }
+                plugin.setup?.(mockBuild as unknown as import('bun').PluginBuilder)
+            }
+
+            for (const item of nonCssHandlers) {
+                if (item.type === 'load') {
+                    build.onLoad(item.opts, item.handler)
+                } else {
+                    build.onResolve(item.opts, item.handler)
+                }
+            }
+
+            build.onLoad({ filter: /\.css$/ }, async (args) => {
+                let processedCSS = await Bun.file(args.path).text()
+
+                for (const { filter, handler } of cssHandlers) {
+                    if (filter.test(args.path)) {
+                        const result = await handler(args)
+                        if (result && typeof result === 'object' && 'contents' in result) {
+                            const contents = result.contents
+                            processedCSS = typeof contents === 'string' ? contents : new TextDecoder().decode(contents)
+                        }
+                    }
+                }
+
+                const jsCode = `
+const style = document.createElement('style');
+style.textContent = ${JSON.stringify(processedCSS)};
+document.head.appendChild(style);
+export default ${JSON.stringify(processedCSS)};
+`
+                return {
+                    contents: jsCode,
+                    loader: 'js',
+                }
+            })
+        },
+    }
+
     try {
         const outputDir = join(cwd, '.bunact-bundles', bundleId)
         mkdirSync(outputDir, { recursive: true })
@@ -148,7 +210,7 @@ export const createClientBundle = async (
             splitting: true,
             outdir: outputDir,
             naming: '[name]-[hash].[ext]',
-            plugins: [serverOnlyPlugin, ...userPlugins],
+            plugins: [serverOnlyPlugin, cssInjectorPlugin],
             define: {
                 'process.env.NODE_ENV': '"production"',
                 ...getPublicEnvVars(),

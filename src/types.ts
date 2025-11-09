@@ -37,6 +37,23 @@ export interface BundleContext {
     pathname: string
 }
 
+export type CSSHandler = {
+    filter: RegExp
+    handler: (args: import('bun').OnLoadArgs) => Promise<import('bun').OnLoadResult | void>
+}
+
+export type LoadHandler = {
+    type: 'load'
+    opts: { filter: RegExp; namespace?: string }
+    handler: (args: import('bun').OnLoadArgs) => Promise<import('bun').OnLoadResult | void>
+}
+
+export type ResolveHandler = {
+    type: 'resolve'
+    opts: { filter: RegExp; namespace?: string }
+    handler: (args: import('bun').OnResolveArgs) => Promise<import('bun').OnResolveResult | null | undefined> | import('bun').OnResolveResult | null | undefined
+}
+
 export interface BunactPlugin {
     name: string
     setup?: (config: BunactConfig) => void | Promise<void>
