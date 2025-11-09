@@ -177,7 +177,7 @@ export const fetch = async (request: Request, config: MeactConfig) => {
 
                 const stream = await renderToReadableStream(notFoundTree, {
                     bootstrapScriptContent: `window.__MEACT_PROMISE_CACHE__=${serializedCache};window.__MEACT_PAGE_PROPS__=${serializedPageProps}`,
-                    bootstrapScripts: scripts,
+                    bootstrapModules: scripts,
                 })
 
                 return new Response(stream, {
@@ -216,7 +216,7 @@ export const fetch = async (request: Request, config: MeactConfig) => {
                     const serializedPageProps = JSON.stringify(serializePageProps(pageProps))
                     const stream = await renderToReadableStream(componentTree, {
                         bootstrapScriptContent: `window.__MEACT_PROMISE_CACHE__=${serializedCache};window.__MEACT_PAGE_PROPS__=${serializedPageProps}`,
-                        bootstrapScripts: scripts,
+                        bootstrapModules: scripts,
                     })
                     return await new Response(stream).text()
                 })
@@ -238,7 +238,7 @@ export const fetch = async (request: Request, config: MeactConfig) => {
 
         const stream = await renderToReadableStream(componentTree, {
             bootstrapScriptContent: `window.__MEACT_PROMISE_CACHE__=${serializedCache};window.__MEACT_PAGE_PROPS__=${serializedPageProps}`,
-            bootstrapScripts: scripts,
+            bootstrapModules: scripts,
         })
 
         if (revalidate !== false && revalidate !== undefined) {

@@ -2,7 +2,7 @@ import { createHydrateScript } from './hydrate'
 import { writeFileSync, mkdirSync, rmSync } from 'fs'
 import { join } from 'path'
 import { createHash } from 'crypto'
-import { wrapServerOnlyCode } from './transform'
+import { wrapServerOnlyCode, hasUseClientDirective } from './transform'
 import { getPublicEnvVars } from '../config/env'
 import type { BunPlugin } from 'bun'
 
@@ -88,11 +88,27 @@ export const createClientBundle = async (
                 }
             })
 
-            build.onLoad({ filter: /pages\/.*\.tsx$/ }, async (args) => {
+            build.onLoad({ filter: /\.(tsx|ts)$/ }, async (args) => {
                 const code = await Bun.file(args.path).text()
-                const transformed = wrapServerOnlyCode(code, args.path)
+
+                if (hasUseClientDirective(code)) {
+                    const cleanCode = code.replace(/^["']use client["'];?\s*\n?/m, '')
+                    return {
+                        contents: cleanCode,
+                        loader: 'tsx',
+                    }
+                }
+
+                if (args.path.includes('/pages/')) {
+                    const transformed = wrapServerOnlyCode(code, args.path)
+                    return {
+                        contents: transformed,
+                        loader: 'tsx',
+                    }
+                }
+
                 return {
-                    contents: transformed,
+                    contents: code,
                     loader: 'tsx',
                 }
             })

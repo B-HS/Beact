@@ -9,11 +9,19 @@ import type { ServerWebSocket } from 'bun'
 plugin({
     name: 'meact-server-transform',
     setup(build) {
-        build.onLoad({ filter: /pages\/.*\.tsx$/ }, async (args) => {
+        build.onLoad({ filter: /\.(tsx|ts)$/ }, async (args) => {
             const code = await Bun.file(args.path).text()
-            const transformed = wrapServerOnlyCode(code, args.path)
+
+            if (args.path.includes('/pages/')) {
+                const transformed = wrapServerOnlyCode(code, args.path)
+                return {
+                    contents: transformed,
+                    loader: 'tsx',
+                }
+            }
+
             return {
-                contents: transformed,
+                contents: code,
                 loader: 'tsx',
             }
         })
@@ -59,7 +67,7 @@ export const dev = async () => {
             }
 
             if (url.pathname === '/.meact/hmr.js') {
-                const hmrClientPath = join(import.meta.dir, '../dev/hmr-client.ts')
+                const hmrClientPath = join(import.meta.dir, '../dev/hmr-client.js')
                 return new Response(Bun.file(hmrClientPath), {
                     headers: { 'content-type': 'application/javascript' },
                 })
@@ -84,7 +92,18 @@ export const dev = async () => {
     let reloadTimeout: Timer | null = null
 
     try {
-        watch(rootDir, { recursive: true }, () => {
+        watch(rootDir, { recursive: true }, (event, filename) => {
+            if (!filename) return
+
+            const shouldIgnore =
+                filename.includes('.meact-bundles') ||
+                filename.includes('node_modules') ||
+                filename.includes('.git') ||
+                filename.includes('.meact-temp') ||
+                filename.includes('dist')
+
+            if (shouldIgnore) return
+
             if (reloadTimeout) {
                 clearTimeout(reloadTimeout)
             }
