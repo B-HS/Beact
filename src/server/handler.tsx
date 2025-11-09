@@ -172,9 +172,12 @@ export const fetch = async (request: Request, config: MeactConfig) => {
                 const serializedCache = JSON.stringify(promiseCache)
                 const serializedPageProps = JSON.stringify(serializePageProps(pageProps))
 
+                const isDev = process.env.NODE_ENV !== 'production'
+                const scripts = isDev ? ['/.meact/hmr.js', `/.meact/${bundleId}/${mainScript}`] : [`/.meact/${bundleId}/${mainScript}`]
+
                 const stream = await renderToReadableStream(notFoundTree, {
                     bootstrapScriptContent: `window.__MEACT_PROMISE_CACHE__=${serializedCache};window.__MEACT_PAGE_PROPS__=${serializedPageProps}`,
-                    bootstrapScripts: [`/.meact/${bundleId}/${mainScript}`],
+                    bootstrapScripts: scripts,
                 })
 
                 return new Response(stream, {
@@ -201,6 +204,9 @@ export const fetch = async (request: Request, config: MeactConfig) => {
         }
 
         if (cacheResult.type === 'stale') {
+            const isDev = process.env.NODE_ENV !== 'production'
+            const scripts = isDev ? ['/.meact/hmr.js', `/.meact/${bundleId}/${mainScript}`] : [`/.meact/${bundleId}/${mainScript}`]
+
             isrCache.startRevalidation(cacheKey, async () => {
                 const renderCache = new Map<string, any>()
                 return promiseStorage.run(renderCache, async () => {
@@ -210,7 +216,7 @@ export const fetch = async (request: Request, config: MeactConfig) => {
                     const serializedPageProps = JSON.stringify(serializePageProps(pageProps))
                     const stream = await renderToReadableStream(componentTree, {
                         bootstrapScriptContent: `window.__MEACT_PROMISE_CACHE__=${serializedCache};window.__MEACT_PAGE_PROPS__=${serializedPageProps}`,
-                        bootstrapScripts: [`/.meact/${bundleId}/${mainScript}`],
+                        bootstrapScripts: scripts,
                     })
                     return await new Response(stream).text()
                 })
@@ -227,9 +233,12 @@ export const fetch = async (request: Request, config: MeactConfig) => {
         const serializedCache = JSON.stringify(promiseCache)
         const serializedPageProps = JSON.stringify(serializePageProps(pageProps))
 
+        const isDev = process.env.NODE_ENV !== 'production'
+        const scripts = isDev ? ['/.meact/hmr.js', `/.meact/${bundleId}/${mainScript}`] : [`/.meact/${bundleId}/${mainScript}`]
+
         const stream = await renderToReadableStream(componentTree, {
             bootstrapScriptContent: `window.__MEACT_PROMISE_CACHE__=${serializedCache};window.__MEACT_PAGE_PROPS__=${serializedPageProps}`,
-            bootstrapScripts: [`/.meact/${bundleId}/${mainScript}`],
+            bootstrapScripts: scripts,
         })
 
         if (revalidate !== false && revalidate !== undefined) {

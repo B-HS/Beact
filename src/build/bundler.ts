@@ -142,3 +142,7 @@ export const createClientBundle = async (
 export const getBundleOutputDir = (bundleId: string) => {
     return bundleCache.get(bundleId)?.outputDir
 }
+
+export const clearBundleCache = () => {
+    bundleCache.clear()
+}

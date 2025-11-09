@@ -10,7 +10,7 @@ export const create = async (projectName?: string) => {
 
     const projectPath = join(process.cwd(), projectName)
 
-    console.log(`\n🚀 Creating Meact project: ${projectName}\n`)
+    console.log(`\nCreating Meact project: ${projectName}\n`)
 
     try {
         await mkdir(projectPath, { recursive: true })
@@ -184,7 +184,7 @@ bun run dev
 `,
         )
 
-        console.log('✅ Project created successfully!\n')
+        console.log('Project created successfully!\n')
         console.log('Next steps:')
         console.log(`  cd ${projectName}`)
         console.log('  bun install')

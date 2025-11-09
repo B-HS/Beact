@@ -7,9 +7,9 @@ export const build = async () => {
     const rootDir = process.cwd()
     const config = await loadConfig(rootDir)
 
-    console.log('🔨 Building Meact standalone server...')
-    console.log(`📁 Project root: ${config.rootDir}`)
-    console.log(`📄 Pages directory: ${config.pagesDir}`)
+    console.log('Building Meact standalone server...')
+    console.log(`Project root: ${config.rootDir}`)
+    console.log(`Pages directory: ${config.pagesDir}`)
 
     const standaloneDir = join(rootDir, '.meact')
 
@@ -18,7 +18,7 @@ export const build = async () => {
     }
     mkdirSync(standaloneDir, { recursive: true })
 
-    console.log('📦 Bundling server...')
+    console.log('Bundling server...')
 
     const tempMeactDir = join(standaloneDir, 'node_modules/meact')
     mkdirSync(tempMeactDir, { recursive: true })
@@ -32,7 +32,7 @@ import { loadConfig } from 'meact/config'
 const rootDir = import.meta.dir
 const config = await loadConfig(rootDir)
 
-console.log('🚀 Meact server starting on port ' + config.port + '...')
+console.log('Meact server starting on port ' + config.port + '...')
 
 Bun.serve({
     port: config.port,
@@ -40,7 +40,7 @@ Bun.serve({
     development: false
 })
 
-console.log('✅ Ready at http://localhost:' + config.port)
+console.log('Ready at http://localhost:' + config.port)
 `
 
     const serverEntryPath = join(standaloneDir, 'server-entry.ts')
@@ -56,14 +56,14 @@ console.log('✅ Ready at http://localhost:' + config.port)
     })
 
     if (!result.success) {
-        console.error('❌ Server build failed')
+        console.error('Server build failed')
         result.logs.forEach((log) => console.error(log))
         throw new Error('Build failed')
     }
 
     rmSync(serverEntryPath)
 
-    console.log('📄 Copying and transforming pages...')
+    console.log('Copying and transforming pages...')
     const copyAndTransformPages = (srcDir: string, destDir: string) => {
         mkdirSync(destDir, { recursive: true })
         const entries = readdirSync(srcDir)
@@ -88,13 +88,13 @@ console.log('✅ Ready at http://localhost:' + config.port)
 
     const componentsDir = join(rootDir, 'components')
     if (existsSync(componentsDir)) {
-        console.log('📦 Copying components...')
+        console.log('Copying components...')
         cpSync(componentsDir, join(standaloneDir, 'components'), { recursive: true })
     }
 
     const publicDir = join(rootDir, 'public')
     if (existsSync(publicDir)) {
-        console.log('📦 Copying public files...')
+        console.log('Copying public files...')
         cpSync(publicDir, join(standaloneDir, 'public'), { recursive: true })
     }
 
@@ -103,7 +103,7 @@ console.log('✅ Ready at http://localhost:' + config.port)
         cpSync(userConfigPath, join(standaloneDir, 'meact.config.ts'))
     }
 
-    console.log('📦 Copying dependencies...')
+    console.log('Copying dependencies...')
     const packageJsonPath = join(rootDir, 'package.json')
     if (existsSync(packageJsonPath)) {
         const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
@@ -120,7 +120,7 @@ console.log('✅ Ready at http://localhost:' + config.port)
                         force: true,
                     })
                 } catch (err) {
-                    console.warn(`  ⚠️  Failed to copy ${dep}: ${err instanceof Error ? err.message : String(err)}`)
+                    console.warn(`  Failed to copy ${dep}: ${err instanceof Error ? err.message : String(err)}`)
                 }
             }
         }
@@ -135,7 +135,7 @@ console.log('✅ Ready at http://localhost:' + config.port)
     }
     writeFileSync(join(standaloneDir, 'package.json'), JSON.stringify(packageJson, null, 2))
 
-    console.log(`\n✨ Build complete! Output: ${standaloneDir}`)
+    console.log(`\nBuild complete! Output: ${standaloneDir}`)
     console.log(`\nTo run:`)
     console.log(`  cd ${standaloneDir}`)
     console.log(`  bun start`)
