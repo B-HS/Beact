@@ -1,6 +1,6 @@
 {
     "name": "bunact",
-    "version": "0.1.0",
+    "version": "0.0.1",
     "description": "A lightweight React framework with SSR and SSG support",
     "keywords": [
         "react",
@@ -82,14 +82,14 @@
         "react-dom": "^19"
     },
     "dependencies": {
-        "sharp": "^0.34.5"
+        "sharp": "^0.34.5",
+        "typescript": "^5"
     },
     "devDependencies": {
         "@types/bun": "latest",
         "@types/react": "^19",
         "@types/react-dom": "^19",
-        "feconfig-bhs": "^1.0.7",
-        "typescript": "^5"
+        "feconfig-bhs": "^1.0.7"
     },
     "engines": {
         "bun": ">=1.0.0"
