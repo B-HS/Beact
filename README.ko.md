@@ -1,7 +1,7 @@
-<center><img src="./meact.png" width="200px" alt="meact logo" /></center>
+<center><img src="./beact.png" width="200px" alt="beact logo" /></center>
 <center><sub>(mehhh)</sub></center>
 
-# Meact
+# Beact
 
 > 파일 기반 라우팅, SSR 스트리밍, ISR을 지원하는 경량 React 프레임워크
 
@@ -21,7 +21,7 @@
 ### 새 프로젝트 생성
 
 ```bash
-bunx meact create my-app
+bunx beact create my-app
 cd my-app
 ```
 
@@ -84,7 +84,7 @@ pages/
 ### 이미지 최적화
 
 ```tsx
-import { Image } from 'meact/ui/Image'
+import { Image } from 'beact/ui/Image'
 
 <Image
   src="/photo.jpg"
@@ -141,22 +141,22 @@ export const POST = async (request: Request) => {
 ```bash
 # .env
 SECRET_KEY=server-only-value              # 서버 전용
-MEACT_PUBLIC_API_URL=https://api.com     # 클라이언트에서 사용 가능
+BEACT_PUBLIC_API_URL=https://api.com     # 클라이언트에서 사용 가능
 ```
 
 ```tsx
 // 서버 컴포넌트
 const secret = process.env.SECRET_KEY // 서버 전용
-const apiUrl = process.env.MEACT_PUBLIC_API_URL // 서버 + 클라이언트
+const apiUrl = process.env.BEACT_PUBLIC_API_URL // 서버 + 클라이언트
 ```
 
 ### 설정
 
-프로젝트 루트에 `meact.config.ts` (또는 `.js`, `.mjs`) 파일을 생성하여 프레임워크 동작을 커스터마이징할 수 있습니다:
+프로젝트 루트에 `beact.config.ts` (또는 `.js`, `.mjs`) 파일을 생성하여 프레임워크 동작을 커스터마이징할 수 있습니다:
 
 ```tsx
-// meact.config.ts
-import type { MeactConfig } from 'meact'
+// beact.config.ts
+import type { BeactConfig } from 'beact'
 
 export default {
     port: 4000,
@@ -177,7 +177,7 @@ export default {
             },
         },
     ],
-} satisfies MeactConfig
+} satisfies BeactConfig
 ```
 
 **사용 가능한 설정 옵션:**
@@ -185,7 +185,7 @@ export default {
 -   `port` - 개발 서버 포트 (기본값: 3000)
 -   `pagesDir` - 페이지 디렉토리 경로 (기본값: `pages`)
 -   `publicDir` - 정적 파일 디렉토리 (기본값: `public`)
--   `cacheDir` - 캐시 디렉토리 (기본값: `.meact/cache`)
+-   `cacheDir` - 캐시 디렉토리 (기본값: `.beact/cache`)
 -   `constants` - 프레임워크 상수 오버라이드
 -   `plugins` - 커스텀 플러그인 추가
 
@@ -201,4 +201,4 @@ MIT
 
 ## 링크
 
--   [GitHub](https://github.com/B-HS/Meact)
+-   [GitHub](https://github.com/B-HS/Beact)

@@ -17,10 +17,10 @@ switch (command) {
         await build()
         break
     default:
-        console.log('Usage: meact <create|dev|build>')
+        console.log('Usage: beact <create|dev|build>')
         console.log('')
         console.log('Commands:')
-        console.log('  create <app-name>  Create a new Meact app')
+        console.log('  create <app-name>  Create a new Beact app')
         console.log('  dev                Start development server')
         console.log('  build              Build for production')
         process.exit(1)

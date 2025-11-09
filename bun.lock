@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "meact",
+      "name": "beact",
       "dependencies": {
         "sharp": "^0.34.5",
       },

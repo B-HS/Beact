@@ -1,4 +1,4 @@
-export interface MeactConstants {
+export interface BeactConstants {
     server: {
         defaultPort: number
         bundleDir: string
@@ -35,23 +35,23 @@ const getEnvInt = (key: string, defaultValue: number): number => {
     return value ? parseInt(value, 10) : defaultValue
 }
 
-export const defaultConstants: MeactConstants = {
+export const defaultConstants: BeactConstants = {
     server: {
         defaultPort: getEnvInt('PORT', 3000),
-        bundleDir: '.meact-bundles',
-        hmrEndpoint: '/.meact/hmr',
-        hmrClientPath: '/.meact/hmr.js',
-        imageEndpoint: '/.meact/image',
+        bundleDir: '.beact-bundles',
+        hmrEndpoint: '/.beact/hmr',
+        hmrClientPath: '/.beact/hmr.js',
+        imageEndpoint: '/.beact/image',
     },
     build: {
-        tempDirName: '.meact-temp',
-        bundleDirName: '.meact-bundles',
-        standaloneOutputDir: '.meact',
+        tempDirName: '.beact-temp',
+        bundleDirName: '.beact-bundles',
+        standaloneOutputDir: '.beact',
     },
     cache: {
-        maxIsrCacheSize: getEnvInt('MEACT_ISR_MAX_CACHE_SIZE', 1000),
-        maxImageCacheSizeMB: getEnvInt('MEACT_IMAGE_CACHE_SIZE', 500),
-        cacheDir: '.meact/cache',
+        maxIsrCacheSize: getEnvInt('BEACT_ISR_MAX_CACHE_SIZE', 1000),
+        maxImageCacheSizeMB: getEnvInt('BEACT_IMAGE_CACHE_SIZE', 500),
+        cacheDir: '.beact/cache',
         imageCacheSubdir: 'images',
     },
     paths: {
@@ -60,10 +60,10 @@ export const defaultConstants: MeactConstants = {
         componentsDir: 'components',
         proxyFile: 'proxy.ts',
     },
-    publicEnvPrefix: 'MEACT_PUBLIC_',
+    publicEnvPrefix: 'BEACT_PUBLIC_',
 }
 
-export const getConstants = (overrides?: Partial<MeactConstants>): MeactConstants => {
+export const getConstants = (overrides?: Partial<BeactConstants>): BeactConstants => {
     if (!overrides) return defaultConstants
 
     return {

@@ -2,7 +2,7 @@ import { plugin } from 'bun'
 import { wrapServerOnlyCode } from './transform'
 
 plugin({
-    name: 'meact-server-transform',
+    name: 'beact-server-transform',
     setup(build) {
         build.onLoad({ filter: /pages\/.*\.tsx$/ }, async (args) => {
             const code = await Bun.file(args.path).text()

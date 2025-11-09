@@ -35,19 +35,19 @@ export const createClientBundle = async (
 
     const resolveImportPath = (path: string) => {
         if (path.startsWith('../')) {
-            return path.replace('../', 'meact/')
+            return path.replace('../', 'beact/')
         }
         return join(pagesDir, path)
     }
 
     const absoluteLayoutPaths = layoutPaths.map((path) => join(pagesDir, path))
     const absolutePagePath = resolveImportPath(pagePath)
-    const absoluteErrorPath = errorPath ? (errorPath.startsWith('../') ? errorPath.replace('../', 'meact/') : errorPath) : undefined
-    const absoluteLoadingPath = loadingPath ? (loadingPath.startsWith('../') ? loadingPath.replace('../', 'meact/') : loadingPath) : undefined
+    const absoluteErrorPath = errorPath ? (errorPath.startsWith('../') ? errorPath.replace('../', 'beact/') : errorPath) : undefined
+    const absoluteLoadingPath = loadingPath ? (loadingPath.startsWith('../') ? loadingPath.replace('../', 'beact/') : loadingPath) : undefined
 
     const hydrateScript = createHydrateScript(absoluteLayoutPaths, absolutePagePath, absoluteErrorPath, absoluteLoadingPath)
 
-    const tempDir = join(cwd, '.meact-temp')
+    const tempDir = join(cwd, '.beact-temp')
     mkdirSync(tempDir, { recursive: true })
     const tempFile = join(tempDir, `${bundleId}.tsx`)
 
@@ -56,22 +56,22 @@ export const createClientBundle = async (
     const serverOnlyPlugin: BunPlugin = {
         name: 'server-only-transform',
         setup(build) {
-            build.onResolve({ filter: /^meact\/ui\// }, (args) => {
-                const uiPath = args.path.replace('meact/ui/', '')
+            build.onResolve({ filter: /^beact\/ui\// }, (args) => {
+                const uiPath = args.path.replace('beact/ui/', '')
                 return {
-                    path: join(cwd, 'node_modules', 'meact', 'dist', 'ui', uiPath + '.js'),
+                    path: join(cwd, 'node_modules', 'beact', 'dist', 'ui', uiPath + '.js'),
                 }
             })
 
-            build.onResolve({ filter: /^meact\/router$/ }, () => {
+            build.onResolve({ filter: /^beact\/router$/ }, () => {
                 return {
-                    path: join(cwd, 'node_modules', 'meact', 'dist', 'router', 'index.js'),
+                    path: join(cwd, 'node_modules', 'beact', 'dist', 'router', 'index.js'),
                 }
             })
 
-            build.onResolve({ filter: /^meact\/context\/promise$/ }, () => {
+            build.onResolve({ filter: /^beact\/context\/promise$/ }, () => {
                 return {
-                    path: join(cwd, 'node_modules', 'meact', 'dist', 'context', 'promise.js'),
+                    path: join(cwd, 'node_modules', 'beact', 'dist', 'context', 'promise.js'),
                     namespace: 'context-promise-stub',
                 }
             })
@@ -116,7 +116,7 @@ export const createClientBundle = async (
     }
 
     try {
-        const outputDir = join(cwd, '.meact-bundles', bundleId)
+        const outputDir = join(cwd, '.beact-bundles', bundleId)
         mkdirSync(outputDir, { recursive: true })
 
         const result = await Bun.build({

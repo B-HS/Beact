@@ -1,6 +1,6 @@
 import { resolve } from 'path'
 import { existsSync, statSync } from 'fs'
-import type { ResolvedMeactConfig } from '../types'
+import type { ResolvedBeactConfig } from '../types'
 
 const MIME_TYPES: Record<string, string> = {
     '.html': 'text/html',
@@ -28,7 +28,7 @@ export const getMimeType = (filePath: string) => {
     return MIME_TYPES[ext] || 'application/octet-stream'
 }
 
-export const serveStaticFile = async (request: Request, config: ResolvedMeactConfig) => {
+export const serveStaticFile = async (request: Request, config: ResolvedBeactConfig) => {
     const url = new URL(request.url)
     const pathname = url.pathname
 

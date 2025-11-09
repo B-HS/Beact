@@ -1,7 +1,7 @@
-<center><img src="./meact.png" width="200px" alt="meact logo" /></center>
+<center><img src="./beact.png" width="200px" alt="beact logo" /></center>
 <center><sub>(mehhh)</sub></center>
 
-# Meact
+# Beact
 
 > A lightweight React framework built with Bun, featuring file-based routing, SSR streaming, and ISR.
 
@@ -21,7 +21,7 @@
 ### Create a New Project
 
 ```bash
-bunx meact create my-app
+bunx beact create my-app
 cd my-app
 ```
 
@@ -84,7 +84,7 @@ pages/
 ### Image Optimization
 
 ```tsx
-import { Image } from 'meact/ui/Image'
+import { Image } from 'beact/ui/Image'
 
 <Image
   src="/photo.jpg"
@@ -141,22 +141,22 @@ export const POST = async (request: Request) => {
 ```bash
 # .env
 SECRET_KEY=server-only-value              # Server-only
-MEACT_PUBLIC_API_URL=https://api.com     # Available on client
+BEACT_PUBLIC_API_URL=https://api.com     # Available on client
 ```
 
 ```tsx
 // Server component
 const secret = process.env.SECRET_KEY // Server-only
-const apiUrl = process.env.MEACT_PUBLIC_API_URL // Server + Client
+const apiUrl = process.env.BEACT_PUBLIC_API_URL // Server + Client
 ```
 
 ### Configuration
 
-Create a `meact.config.ts` (or `.js`, `.mjs`) file in your project root to customize framework behavior:
+Create a `beact.config.ts` (or `.js`, `.mjs`) file in your project root to customize framework behavior:
 
 ```tsx
-// meact.config.ts
-import type { MeactConfig } from 'meact'
+// beact.config.ts
+import type { BeactConfig } from 'beact'
 
 export default {
     port: 4000,
@@ -177,7 +177,7 @@ export default {
             },
         },
     ],
-} satisfies MeactConfig
+} satisfies BeactConfig
 ```
 
 **Available configuration options:**
@@ -185,7 +185,7 @@ export default {
 -   `port` - Development server port (default: 3000)
 -   `pagesDir` - Pages directory path (default: `pages`)
 -   `publicDir` - Public assets directory (default: `public`)
--   `cacheDir` - Cache directory (default: `.meact/cache`)
+-   `cacheDir` - Cache directory (default: `.beact/cache`)
 -   `constants` - Override framework constants
 -   `plugins` - Add custom plugins
 
@@ -201,4 +201,4 @@ MIT
 
 ## Links
 
--   [GitHub](https://github.com/B-HS/Meact)
+-   [GitHub](https://github.com/B-HS/Beact)

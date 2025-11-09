@@ -7,7 +7,7 @@ import { join } from 'path'
 import type { ServerWebSocket } from 'bun'
 
 plugin({
-    name: 'meact-server-transform',
+    name: 'beact-server-transform',
     setup(build) {
         build.onLoad({ filter: /\.(tsx|ts)$/ }, async (args) => {
             const code = await Bun.file(args.path).text()
@@ -46,7 +46,7 @@ export const dev = async () => {
     const rootDir = process.cwd()
     const config = await loadConfig(rootDir)
 
-    console.log(`Meact dev server starting on port ${config.port}...`)
+    console.log(`Beact dev server starting on port ${config.port}...`)
     console.log(`Project root: ${config.rootDir}`)
     console.log(`Pages directory: ${config.pagesDir}`)
 
@@ -55,7 +55,7 @@ export const dev = async () => {
         fetch: (request, server) => {
             const url = new URL(request.url)
 
-            if (url.pathname === '/.meact/hmr') {
+            if (url.pathname === '/.beact/hmr') {
                 const success = server.upgrade(request)
                 if (success) {
                     return undefined
@@ -63,7 +63,7 @@ export const dev = async () => {
                 return new Response('WebSocket upgrade failed', { status: 400 })
             }
 
-            if (url.pathname === '/.meact/hmr.js') {
+            if (url.pathname === '/.beact/hmr.js') {
                 const hmrClientPath = join(import.meta.dir, '../dev/hmr-client.js')
                 return new Response(Bun.file(hmrClientPath), {
                     headers: { 'content-type': 'application/javascript' },
@@ -93,10 +93,10 @@ export const dev = async () => {
             if (!filename) return
 
             const shouldIgnore =
-                filename.includes('.meact-bundles') ||
+                filename.includes('.beact-bundles') ||
                 filename.includes('node_modules') ||
                 filename.includes('.git') ||
-                filename.includes('.meact-temp') ||
+                filename.includes('.beact-temp') ||
                 filename.includes('dist')
 
             if (shouldIgnore) return

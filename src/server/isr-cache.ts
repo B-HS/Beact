@@ -77,4 +77,4 @@ class ISRCache {
     }
 }
 
-export const isrCache = new ISRCache(parseInt(process.env.MEACT_ISR_MAX_CACHE_SIZE || '1000', 10))
+export const isrCache = new ISRCache(parseInt(process.env.BEACT_ISR_MAX_CACHE_SIZE || '1000', 10))

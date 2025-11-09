@@ -5,7 +5,7 @@ export const getPublicEnvVars = () => {
     const publicEnvVars: Record<string, string> = {}
 
     for (const key in process.env) {
-        if (key.startsWith('MEACT_PUBLIC_')) {
+        if (key.startsWith('BEACT_PUBLIC_')) {
             const envKey = `process.env.${key}`
             const envValue = process.env[key]
             publicEnvVars[envKey] = JSON.stringify(envValue)

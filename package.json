@@ -1,5 +1,5 @@
 {
-    "name": "meact",
+    "name": "beact",
     "version": "0.1.0",
     "description": "A lightweight React framework with SSR and SSG support",
     "keywords": [
@@ -13,7 +13,7 @@
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "bin": {
-        "meact": "./dist/cli.js"
+        "beact": "./dist/cli.js"
     },
     "exports": {
         ".": {
@@ -104,7 +104,7 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/B-HS/Meact"
+        "url": "https://github.com/B-HS/Beact"
     },
     "author": "HyunseokByun"
 }

@@ -4,13 +4,13 @@ import { join } from 'path'
 export const create = async (projectName?: string) => {
     if (!projectName) {
         console.error('Error: Project name is required')
-        console.log('Usage: meact create <project-name>')
+        console.log('Usage: beact create <project-name>')
         process.exit(1)
     }
 
     const projectPath = join(process.cwd(), projectName)
 
-    console.log(`\nCreating Meact project: ${projectName}\n`)
+    console.log(`\nCreating Beact project: ${projectName}\n`)
 
     try {
         await mkdir(projectPath, { recursive: true })
@@ -27,10 +27,10 @@ export const create = async (projectName?: string) => {
                     version: '1.0.0',
                     type: 'module',
                     scripts: {
-                        dev: 'bun --watch node_modules/@meact/meact/dist/commands/dev.js',
+                        dev: 'bun --watch node_modules/@beact/beact/dist/commands/dev.js',
                     },
                     dependencies: {
-                        '@meact/core': 'workspace:*',
+                        '@beact/core': 'workspace:*',
                         'react': '^19',
                         'react-dom': '^19',
                     },
@@ -80,16 +80,16 @@ export const create = async (projectName?: string) => {
 SECRET_KEY=your-secret-key-here
 
 # 클라이언트 환경 변수 (브라우저에서 접근 가능)
-# MEACT_PUBLIC_ 접두사가 있는 변수만 클라이언트 번들에 포함됨
-MEACT_PUBLIC_API_URL=https://api.example.com
-MEACT_PUBLIC_APP_NAME=Meact Framework
+# BEACT_PUBLIC_ 접두사가 있는 변수만 클라이언트 번들에 포함됨
+BEACT_PUBLIC_API_URL=https://api.example.com
+BEACT_PUBLIC_APP_NAME=Beact Framework
 `,
         )
 
         await writeFile(
             join(projectPath, '.gitignore'),
             `node_modules
-.meact
+.beact
 .env
 dist
 *.log
@@ -136,7 +136,7 @@ export default Layout
 
 const Home = async ({ params, searchParams }: PageProps) => {
     const metadata: Metadata[] = [
-        { title: 'Welcome to Meact' },
+        { title: 'Welcome to Beact' },
         { name: 'description', content: 'A modern React framework built with Bun' },
     ]
 
@@ -144,7 +144,7 @@ const Home = async ({ params, searchParams }: PageProps) => {
         metadata,
         default: () => (
             <div>
-                <h1>Welcome to Meact</h1>
+                <h1>Welcome to Beact</h1>
                 <p>Edit pages/page.tsx to get started!</p>
             </div>
         ),
@@ -161,7 +161,7 @@ export default Home
             join(projectPath, 'README.md'),
             `# ${projectName}
 
-A Meact project.
+A Beact project.
 
 ## Getting Started
 
@@ -179,7 +179,7 @@ bun run dev
 
 ## Learn More
 
-- [Meact Documentation](https://github.com/your-org/meact)
+- [Beact Documentation](https://github.com/your-org/beact)
 - [React Documentation](https://react.dev)
 `,
         )

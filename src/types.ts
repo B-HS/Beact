@@ -29,36 +29,36 @@ export interface ComponentFactory {
 
 export type ProxyHandler = (request: Request) => Request | Response | Promise<Request | Response>
 
-export interface MeactPlugin {
+export interface BeactPlugin {
     name: string
-    setup?: (config: MeactConfig) => void | Promise<void>
+    setup?: (config: BeactConfig) => void | Promise<void>
     bundlePlugin?: any
 }
 
-export interface MeactConfig {
+export interface BeactConfig {
     rootDir?: string
     pagesDir?: string
     publicDir?: string
     cacheDir?: string
     port?: number
-    constants?: Partial<import('./config/constants').MeactConstants>
-    plugins?: MeactPlugin[]
+    constants?: Partial<import('./config/constants').BeactConstants>
+    plugins?: BeactPlugin[]
 }
 
-export interface ResolvedMeactConfig {
+export interface ResolvedBeactConfig {
     rootDir: string
     pagesDir: string
     publicDir: string
     cacheDir: string
     port: number
-    constants: import('./config/constants').MeactConstants
-    plugins?: MeactPlugin[]
+    constants: import('./config/constants').BeactConstants
+    plugins?: BeactPlugin[]
 }
 
 declare global {
     interface Window {
-        __MEACT_PROMISE_CACHE__?: Record<string, any>
-        __MEACT_PAGE_PROPS__?: SerializablePageProps
+        __BEACT_PROMISE_CACHE__?: Record<string, any>
+        __BEACT_PAGE_PROPS__?: SerializablePageProps
     }
 }
 
