@@ -81,9 +81,7 @@ function hasUseClientDirective(filePath: string): boolean {
             }
 
             // If we hit any code before finding 'use client', it's not there
-            if (!trimmed.startsWith('//') && !trimmed.startsWith('/*')) {
-                return false
-            }
+            return false
         }
 
         return false
