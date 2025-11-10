@@ -179,11 +179,17 @@ function extractDependencies(content: string): string[] {
  * Generate registry code for server and client
  *
  * @param components - Array of component metadata
+ * @param baseDir - Base directory where components are located
+ * @param outputDir - Directory where registry files will be written
  * @returns Generated registry code
  */
-export function generateComponentRegistry(components: ComponentMetadata[]): RegistryBuildResult {
-    const serverRegistry = generateServerRegistry(components)
-    const clientRegistry = generateClientRegistry(components)
+export function generateComponentRegistry(
+    components: ComponentMetadata[],
+    baseDir: string,
+    outputDir: string
+): RegistryBuildResult {
+    const serverRegistry = generateServerRegistry(components, baseDir, outputDir)
+    const clientRegistry = generateClientRegistry(components, baseDir, outputDir)
 
     return {
         serverRegistry,
@@ -195,13 +201,18 @@ export function generateComponentRegistry(components: ComponentMetadata[]): Regi
 /**
  * Generate server-side registry code
  */
-function generateServerRegistry(components: ComponentMetadata[]): string {
+function generateServerRegistry(components: ComponentMetadata[], baseDir: string, outputDir: string): string {
+    const { relative } = require('path')
     const imports: string[] = []
     const entries: string[] = []
 
     for (const component of components) {
-        // Generate import statement
-        const importPath = `./${component.path.replace(/\.(tsx?|jsx?)$/, '')}`
+        // Calculate relative path from outputDir to component
+        const componentFullPath = join(baseDir, component.path)
+        const relativePath = relative(outputDir, componentFullPath).replace(/\.(tsx?|jsx?)$/, '')
+
+        // Normalize path separators for imports
+        const importPath = relativePath.split('\\').join('/')
         const varName = sanitizeVarName(component.name)
 
         imports.push(`import { default as ${varName} } from '${importPath}'`)
@@ -225,12 +236,17 @@ ${entries.map((e) => '    ' + e).join(',\n')}
 /**
  * Generate client-side registry code
  */
-function generateClientRegistry(components: ComponentMetadata[]): string {
+function generateClientRegistry(components: ComponentMetadata[], baseDir: string, outputDir: string): string {
+    const { relative } = require('path')
     const entries: string[] = []
 
     for (const component of components) {
-        // Generate lazy import path
-        const importPath = `./${component.path.replace(/\.(tsx?|jsx?)$/, '')}`
+        // Calculate relative path from outputDir to component
+        const componentFullPath = join(baseDir, component.path)
+        const relativePath = relative(outputDir, componentFullPath).replace(/\.(tsx?|jsx?)$/, '')
+
+        // Normalize path separators for imports
+        const importPath = relativePath.split('\\').join('/')
 
         // Generate registry entry with lazy loading
         entries.push(`'${component.id}': lazy(() => import('${importPath}'))`)
@@ -267,8 +283,8 @@ export async function buildRegistryFiles(
     // Scan for client components
     const components = scanClientComponents(pagesDir)
 
-    // Generate registry code
-    const result = generateComponentRegistry(components)
+    // Generate registry code with proper path calculation
+    const result = generateComponentRegistry(components, pagesDir, outputDir)
 
     // Ensure output directory exists
     await mkdir(outputDir, { recursive: true })
