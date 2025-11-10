@@ -28,7 +28,7 @@ export const createClientBundle = async (
 
     if (bundleCache.has(bundleId)) {
         const cached = bundleCache.get(bundleId)!
-        return { bundleId, outputDir: cached.outputDir, mainScript: cached.mainScript }
+        return { bundleId, outputDir: cached.outputDir, mainScript: cached.mainScript, cssFile: cached.cssFile }
     }
 
     const cwd = config.rootDir
