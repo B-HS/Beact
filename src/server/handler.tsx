@@ -4,7 +4,7 @@ import { createClientBundle, getBundleOutputDir } from '../build/bundler'
 import { promiseStorage } from '../context/promise'
 import { handleApiRequest, scanApiRoutes } from '../router'
 import { buildComponentTree, getNotFoundComponent, getRouteComponents } from '../router/router'
-import type { ResolvedBunactConfig, PageProps, SerializablePageProps } from '../types'
+import type { PageProps, ResolvedBunactConfig, SerializablePageProps } from '../types'
 import { handleImageRequest } from './image-handler'
 import { isrCache } from './isr-cache'
 import { loadUserProxy, runProxyChain } from './proxy'
@@ -117,7 +117,7 @@ export const fetch = async (request: Request, config: ResolvedBunactConfig) => {
         return staticResponse
     }
 
-    if (pathname.startsWith('/.bunact/') && pathname.endsWith('.js')) {
+    if (pathname.startsWith('/.bunact/')) {
         const parts = pathname.replace('/.bunact/', '').split('/')
         const bundleId = parts[0]!
         const filename = parts.slice(1).join('/')
@@ -127,9 +127,10 @@ export const fetch = async (request: Request, config: ResolvedBunactConfig) => {
         if (outputDir) {
             const filePath = join(outputDir, filename)
             if (existsSync(filePath)) {
-                const bundleCode = readFileSync(filePath, 'utf-8')
-                return new Response(bundleCode, {
-                    headers: { 'content-type': 'application/javascript' },
+                const fileContent = readFileSync(filePath, 'utf-8')
+                const contentType = filename.endsWith('.css') ? 'text/css' : 'application/javascript'
+                return new Response(fileContent, {
+                    headers: { 'content-type': contentType },
                 })
             }
         }
@@ -166,7 +167,7 @@ export const fetch = async (request: Request, config: ResolvedBunactConfig) => {
                 const pageProps: PageProps = { ...basePageProps, params: {} }
                 const notFoundTree = await buildComponentTree(layouts, notFound, pageProps)
 
-                const { bundleId, mainScript } = await createClientBundle(layoutPaths, notFoundPath, config, undefined, pathname)
+                const { bundleId, mainScript, cssFile } = await createClientBundle(layoutPaths, notFoundPath, config, undefined, pathname)
 
                 const promiseCache = Object.fromEntries(cache.entries())
                 const serializedCache = JSON.stringify(promiseCache)
@@ -180,7 +181,14 @@ export const fetch = async (request: Request, config: ResolvedBunactConfig) => {
                     bootstrapModules: scripts,
                 })
 
-                return new Response(stream, {
+                let html = await new Response(stream).text()
+
+                if (cssFile) {
+                    const cssLink = `<link rel="stylesheet" href="/.bunact/${bundleId}/${cssFile}">`
+                    html = html.replace('</head>', `${cssLink}</head>`)
+                }
+
+                return new Response(html, {
                     status: 404,
                     headers: { 'content-type': 'text/html' },
                 })
@@ -192,7 +200,7 @@ export const fetch = async (request: Request, config: ResolvedBunactConfig) => {
         const { layouts, page, layoutPaths, pagePath, errorPath, loadingPath, params, metadata, revalidate } = routeComponents
         const pageProps: PageProps = { ...basePageProps, params }
 
-        const { bundleId, mainScript } = await createClientBundle(layoutPaths, pagePath, config, errorPath, pathname, loadingPath)
+        const { bundleId, mainScript, cssFile } = await createClientBundle(layoutPaths, pagePath, config, errorPath, pathname, loadingPath)
 
         const cacheKey = `${pathname}:${JSON.stringify(params)}`
         const cacheResult = isrCache.get(cacheKey)
@@ -218,7 +226,14 @@ export const fetch = async (request: Request, config: ResolvedBunactConfig) => {
                         bootstrapScriptContent: `window.__BUNACT_PROMISE_CACHE__=${serializedCache};window.__BUNACT_PAGE_PROPS__=${serializedPageProps}`,
                         bootstrapModules: scripts,
                     })
-                    return await new Response(stream).text()
+                    let html = await new Response(stream).text()
+
+                    if (cssFile) {
+                        const cssLink = `<link rel="stylesheet" href="/.bunact/${bundleId}/${cssFile}">`
+                        html = html.replace('</head>', `${cssLink}</head>`)
+                    }
+
+                    return html
                 })
             })
 
@@ -241,15 +256,21 @@ export const fetch = async (request: Request, config: ResolvedBunactConfig) => {
             bootstrapModules: scripts,
         })
 
+        let html = await new Response(stream).text()
+
+        if (cssFile) {
+            const cssLink = `<link rel="stylesheet" href="/.bunact/${bundleId}/${cssFile}">`
+            html = html.replace('</head>', `${cssLink}</head>`)
+        }
+
         if (revalidate !== false && revalidate !== undefined) {
-            const html = await new Response(stream).text()
             isrCache.set(cacheKey, html, revalidate)
             return new Response(html, {
                 headers: { 'content-type': 'text/html' },
             })
         }
 
-        return new Response(stream, {
+        return new Response(html, {
             headers: { 'content-type': 'text/html' },
         })
     })

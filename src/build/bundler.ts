@@ -1,5 +1,5 @@
 import { createHydrateScript } from './hydrate'
-import { writeFileSync, mkdirSync, rmSync } from 'fs'
+import { writeFileSync, mkdirSync, rmSync, existsSync, readFileSync } from 'fs'
 import { join } from 'path'
 import { createHash } from 'crypto'
 import { wrapServerOnlyCode, hasUseClientDirective } from './transform'
@@ -7,7 +7,7 @@ import { getPublicEnvVars } from '../config/env'
 import type { BunPlugin } from 'bun'
 import type { ResolvedBunactConfig, BundleContext, CSSHandler, LoadHandler, ResolveHandler } from '../types'
 
-const bundleCache = new Map<string, { outputDir: string; mainScript: string }>()
+const bundleCache = new Map<string, { outputDir: string; mainScript: string; cssFile?: string }>()
 
 const generateBundleId = (pathname: string) => {
     return createHash('md5').update(pathname).digest('hex')
@@ -147,6 +147,8 @@ export const createClientBundle = async (
             })
             .filter((p): p is BunPlugin => p !== null) ?? []
 
+    let collectedCSS = ''
+
     const cssInjectorPlugin: BunPlugin = {
         name: 'css-injector-wrapper',
         setup(build) {
@@ -195,14 +197,10 @@ export const createClientBundle = async (
                     }
                 }
 
-                const jsCode = `
-const style = document.createElement('style');
-style.textContent = ${JSON.stringify(processedCSS)};
-document.head.appendChild(style);
-export default ${JSON.stringify(processedCSS)};
-`
+                collectedCSS += processedCSS + '\n'
+
                 return {
-                    contents: jsCode,
+                    contents: 'export default "";',
                     loader: 'js',
                 }
             })
@@ -238,11 +236,33 @@ export default ${JSON.stringify(processedCSS)};
         }
 
         const mainScript = mainOutput.path.split('/').pop()!
-        bundleCache.set(bundleId, { outputDir, mainScript })
+
+        let cssFile: string | undefined
+        if (collectedCSS.trim()) {
+            cssFile = `${bundleId}.css`
+            const cssPath = join(outputDir, cssFile)
+            writeFileSync(cssPath, collectedCSS)
+        }
+
+        bundleCache.set(bundleId, { outputDir, mainScript, cssFile })
+
+        const manifestPath = join(outputDir, 'manifest.json')
+        writeFileSync(
+            manifestPath,
+            JSON.stringify(
+                {
+                    bundleId,
+                    mainScript,
+                    cssFile,
+                },
+                null,
+                2,
+            ),
+        )
 
         rmSync(tempDir, { recursive: true, force: true })
 
-        return { bundleId, outputDir, mainScript }
+        return { bundleId, outputDir, mainScript, cssFile }
     } catch (error) {
         rmSync(tempDir, { recursive: true, force: true })
         throw error
@@ -251,6 +271,25 @@ export default ${JSON.stringify(processedCSS)};
 
 export const getBundleOutputDir = (bundleId: string) => {
     return bundleCache.get(bundleId)?.outputDir
+}
+
+export const getBundleManifest = (bundleId: string, rootDir: string) => {
+    const cached = bundleCache.get(bundleId)
+    if (cached) {
+        return cached
+    }
+
+    const manifestPath = join(rootDir, '.bunact-bundles', bundleId, 'manifest.json')
+    if (existsSync(manifestPath)) {
+        const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'))
+        return {
+            outputDir: join(rootDir, '.bunact-bundles', bundleId),
+            mainScript: manifest.mainScript,
+            cssFile: manifest.cssFile,
+        }
+    }
+
+    return null
 }
 
 export const clearBundleCache = () => {
