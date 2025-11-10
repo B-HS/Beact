@@ -106,8 +106,10 @@ function deserializeType(type: string | ComponentRef, registry: ClientComponentR
 
         if (!Component) {
             console.error(`Component not found in client registry: ${componentId}`)
-            // Return a placeholder component
-            return () => createElement('div', { 'data-error': `Missing component: ${componentId}` })
+            // Return 'div' tag as fallback (not a function!)
+            // This prevents "[object Object]" error
+            console.warn(`Using <div> placeholder for missing component: ${componentId}`)
+            return 'div'
         }
 
         return Component

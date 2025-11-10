@@ -251,9 +251,15 @@ export const fetch = async (request: Request, config: ResolvedBunactConfig) => {
         const serializedPageProps = JSON.stringify(serializePageProps(pageProps))
 
         // NEW: Serialize component tree for client-side hydration without page imports
-        const serverRegistry = createServerRegistry()
-        // TODO: Load pre-built registry from build process
-        // For now, registry will be empty and components will get auto-generated IDs
+        // Phase 2: Load pre-built registry from generated files
+        let serverRegistry = createServerRegistry()
+        try {
+            const registryPath = join(config.cacheDir, 'registries', 'server-registry')
+            const registryModule = await import(registryPath)
+            serverRegistry = registryModule.serverComponentRegistry || serverRegistry
+        } catch (err) {
+            console.warn('Failed to load server registry, using empty registry:', err)
+        }
 
         const serializedTree = await serializeComponentTree(componentTree, {
             registry: serverRegistry,

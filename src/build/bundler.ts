@@ -85,9 +85,17 @@ export const createClientBundle = async (
             })
 
             build.onResolve({ filter: /^bunact\/registry\/client$/ }, () => {
-                return {
-                    path: join(cwd, 'node_modules', 'bunact', 'dist', 'registry', 'client.js'),
+                // Try to use generated registry first, fallback to empty registry
+                const generatedPath = join(config.cacheDir, 'registries', 'client-registry.ts')
+                const fallbackPath = join(cwd, 'node_modules', 'bunact', 'dist', 'registry', 'client.js')
+
+                // Check if generated registry exists
+                const { existsSync } = require('fs')
+                if (existsSync(generatedPath)) {
+                    return { path: generatedPath }
                 }
+
+                return { path: fallbackPath }
             })
 
             build.onLoad({ filter: /.*/, namespace: 'context-promise-stub' }, async () => {

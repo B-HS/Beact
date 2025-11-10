@@ -2,6 +2,7 @@ import { fetch as handleRequest } from '../server'
 import { loadConfig } from '../config'
 import { getPublicEnvVars } from '../config/env'
 import { wrapServerOnlyCode, clearBundleCache } from '../build'
+import { buildRegistryFiles } from '../build/registry-builder'
 import { plugin } from 'bun'
 import { watch } from 'fs'
 import { join } from 'path'
@@ -52,6 +53,16 @@ export const dev = async () => {
     console.log(`Bunact dev server starting on port ${config.port}...`)
     console.log(`Project root: ${config.rootDir}`)
     console.log(`Pages directory: ${config.pagesDir}`)
+
+    // Phase 2: Build component registries on startup
+    const registryOutputDir = join(config.cacheDir, 'registries')
+    console.log(`🔨 Building component registries...`)
+    try {
+        await buildRegistryFiles(config.pagesDir, registryOutputDir)
+    } catch (err) {
+        console.error('Failed to build registries:', err)
+        console.log('Continuing without registries (may cause hydration issues)')
+    }
 
     const server = Bun.serve({
         port: config.port,
@@ -108,10 +119,20 @@ export const dev = async () => {
                 clearTimeout(reloadTimeout)
             }
 
-            reloadTimeout = setTimeout(() => {
+            reloadTimeout = setTimeout(async () => {
                 console.log('[HMR] File changed, reloading...')
                 clearAllCaches()
                 clearBundleCache()
+
+                // Phase 2: Rebuild registries if component files changed
+                if (filename && (filename.endsWith('.tsx') || filename.endsWith('.jsx'))) {
+                    try {
+                        await buildRegistryFiles(config.pagesDir, registryOutputDir)
+                        console.log('🔄 Registries rebuilt')
+                    } catch (err) {
+                        console.error('Failed to rebuild registries:', err)
+                    }
+                }
 
                 for (const client of clients) {
                     client.send(JSON.stringify({ type: 'reload' }))
