@@ -1,5 +1,6 @@
 import { fetch as handleRequest } from '../server'
 import { loadConfig } from '../config'
+import { getPublicEnvVars } from '../config/env'
 import { wrapServerOnlyCode, clearBundleCache } from '../build'
 import { plugin } from 'bun'
 import { watch } from 'fs'
@@ -45,6 +46,8 @@ const clearAllCaches = () => {
 export const dev = async () => {
     const rootDir = process.cwd()
     const config = await loadConfig(rootDir)
+
+    config.publicEnvVars = getPublicEnvVars()
 
     console.log(`Bunact dev server starting on port ${config.port}...`)
     console.log(`Project root: ${config.rootDir}`)

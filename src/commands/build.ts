@@ -1,4 +1,5 @@
 import { loadConfig } from '../config'
+import { getPublicEnvVars } from '../config/env'
 import { mkdirSync, writeFileSync, cpSync, existsSync, rmSync, readFileSync, readdirSync, statSync } from 'fs'
 import { join } from 'path'
 import { wrapServerOnlyCode } from '../build/transform'
@@ -6,6 +7,8 @@ import { wrapServerOnlyCode } from '../build/transform'
 export const build = async () => {
     const rootDir = process.cwd()
     const config = await loadConfig(rootDir)
+
+    config.publicEnvVars = getPublicEnvVars()
 
     console.log('Building Bunact standalone server...')
     console.log(`Project root: ${config.rootDir}`)
@@ -28,9 +31,12 @@ export const build = async () => {
     const serverEntryCode = `
 import { fetch } from 'bunact/server'
 import { loadConfig } from 'bunact/config'
+import { getPublicEnvVars } from 'bunact/config/env'
 
 const rootDir = import.meta.dir
 const config = await loadConfig(rootDir)
+
+config.publicEnvVars = getPublicEnvVars()
 
 console.log('Bunact server starting on port ' + config.port + '...')
 

@@ -78,6 +78,7 @@ export interface ResolvedBunactConfig {
     port: number
     constants: import('./config/constants').BunactConstants
     plugins?: BunactPlugin[]
+    publicEnvVars?: Record<string, string>
 }
 
 declare global {

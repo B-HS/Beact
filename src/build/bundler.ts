@@ -3,7 +3,6 @@ import { writeFileSync, mkdirSync, rmSync, existsSync, readFileSync } from 'fs'
 import { join } from 'path'
 import { createHash } from 'crypto'
 import { wrapServerOnlyCode, hasUseClientDirective } from './transform'
-import { getPublicEnvVars } from '../config/env'
 import type { BunPlugin } from 'bun'
 import type { ResolvedBunactConfig, BundleContext, CSSHandler, LoadHandler, ResolveHandler } from '../types'
 
@@ -222,7 +221,7 @@ export const createClientBundle = async (
             plugins: [serverOnlyPlugin, cssInjectorPlugin],
             define: {
                 'process.env.NODE_ENV': '"production"',
-                ...getPublicEnvVars(),
+                ...(config.publicEnvVars || {}),
             },
         })
 
