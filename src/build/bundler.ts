@@ -2,6 +2,7 @@ import { createHydrateScript } from './hydrate'
 import { writeFileSync, mkdirSync, rmSync, existsSync, readFileSync } from 'fs'
 import { join } from 'path'
 import { createHash } from 'crypto'
+import { builtinModules } from 'module'
 import { wrapServerOnlyCode, hasUseClientDirective } from './transform'
 import type { BunPlugin } from 'bun'
 import type { ResolvedBunactConfig, BundleContext, CSSHandler, LoadHandler, ResolveHandler } from '../types'
@@ -241,19 +242,13 @@ export const createClientBundle = async (
             outdir: outputDir,
             naming: '[name]-[hash].[ext]',
             plugins: [serverOnlyPlugin, cssInjectorPlugin],
-            // Phase 2: Exclude server-only modules from browser bundle
+            // Phase 2: Only exclude Node.js built-in modules
+            // Server-only packages (mysql2, better-auth, etc.) are automatically excluded
+            // because Phase 2 prevents server pages from being bundled into client
+            // 'use client' components only bundle what they actually use
             external: [
-                // Node.js built-in modules
-                'tls', 'net', 'crypto', 'fs', 'path', 'os', 'stream', 'http', 'https',
-                'child_process', 'dns', 'readline', 'zlib', 'perf_hooks',
-                // Server-only database clients
-                'mysql', 'mysql2', 'pg', 'sqlite3', '@libsql/client', 'mongodb',
-                // Server-only auth libraries
-                'better-auth', '@auth/core',
-                // Server-only ORMs
-                'drizzle-orm', 'prisma', 'typeorm', 'sequelize',
-                // Other server-only packages
-                '@node-rs/bcrypt', 'bcrypt', 'argon2',
+                ...builtinModules,
+                ...builtinModules.map(m => `node:${m}`)
             ],
             define: {
                 'process.env.NODE_ENV': '"production"',
