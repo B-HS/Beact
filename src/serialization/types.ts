@@ -183,6 +183,11 @@ export interface ComponentMetadata {
     isClientComponent: boolean
 
     /**
+     * Whether component uses default export
+     */
+    isDefaultExport: boolean
+
+    /**
      * Module dependencies
      */
     dependencies?: string[]

@@ -104,8 +104,10 @@ function extractComponentMetadata(filePath: string, baseDir: string): ComponentM
         // Extract component name from file
         const fileName = basename(filePath, extname(filePath))
 
-        // Try to find exported component name
-        const exportedName = extractExportedComponentName(content) || fileName
+        // Try to find exported component name and export type
+        const exportInfo = extractExportedComponentName(content)
+        const exportedName = exportInfo?.name || fileName
+        const isDefaultExport = exportInfo?.isDefault ?? false
 
         // Generate component ID
         const componentId = `c:${exportedName}`
@@ -118,6 +120,7 @@ function extractComponentMetadata(filePath: string, baseDir: string): ComponentM
             name: exportedName,
             path: relativePath,
             isClientComponent: true,
+            isDefaultExport,
             dependencies,
         }
     } catch (error) {
@@ -127,25 +130,25 @@ function extractComponentMetadata(filePath: string, baseDir: string): ComponentM
 }
 
 /**
- * Extract the name of the main exported component
+ * Extract the name of the main exported component and its export type
  */
-function extractExportedComponentName(content: string): string | null {
+function extractExportedComponentName(content: string): { name: string; isDefault: boolean } | null {
     // Look for: export default function ComponentName
     const defaultFunctionMatch = content.match(/export\s+default\s+function\s+(\w+)/)
     if (defaultFunctionMatch && defaultFunctionMatch[1]) {
-        return defaultFunctionMatch[1]
+        return { name: defaultFunctionMatch[1], isDefault: true }
     }
 
     // Look for: export const ComponentName =
     const namedConstMatch = content.match(/export\s+const\s+(\w+)\s*=/)
     if (namedConstMatch && namedConstMatch[1]) {
-        return namedConstMatch[1]
+        return { name: namedConstMatch[1], isDefault: false }
     }
 
     // Look for: export function ComponentName
     const namedFunctionMatch = content.match(/export\s+function\s+(\w+)/)
     if (namedFunctionMatch && namedFunctionMatch[1]) {
-        return namedFunctionMatch[1]
+        return { name: namedFunctionMatch[1], isDefault: false }
     }
 
     return null
@@ -215,7 +218,12 @@ function generateServerRegistry(components: ComponentMetadata[], baseDir: string
         const importPath = relativePath.split('\\').join('/')
         const varName = sanitizeVarName(component.name)
 
-        imports.push(`import { default as ${varName} } from '${importPath}'`)
+        // Generate import based on export type
+        if (component.isDefaultExport) {
+            imports.push(`import ${varName} from '${importPath}'`)
+        } else {
+            imports.push(`import { ${component.name} as ${varName} } from '${importPath}'`)
+        }
 
         // Generate registry entry
         entries.push(`[${varName}, '${component.id}']`)
@@ -248,8 +256,12 @@ function generateClientRegistry(components: ComponentMetadata[], baseDir: string
         // Normalize path separators for imports
         const importPath = relativePath.split('\\').join('/')
 
-        // Generate registry entry with lazy loading
-        entries.push(`'${component.id}': lazy(() => import('${importPath}'))`)
+        // Generate registry entry with lazy loading based on export type
+        if (component.isDefaultExport) {
+            entries.push(`'${component.id}': lazy(() => import('${importPath}'))`)
+        } else {
+            entries.push(`'${component.id}': lazy(() => import('${importPath}').then(m => ({ default: m.${component.name} })))`)
+        }
     }
 
     return `
