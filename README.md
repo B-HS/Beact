@@ -1,203 +1,22 @@
-<center><img src="./bunact.png" width="200px" alt="bunact logo" /></center>
+# www
 
-# Bunact
+A Bunact project.
 
-> A lightweight React framework built with Bun, featuring file-based routing, SSR streaming, and ISR.
+## Getting Started
 
-**This framework is written in Bun and requires Bun to run.**
-
-## Features
-
--   **File-based Routing** - Automatic routing based on `pages/` directory structure
--   **SSR & Streaming** - React streaming server-side rendering with hydration
--   **ISR** - Incremental Static Regeneration with background revalidation
--   **Image Optimization** - Automatic image optimization and caching using Sharp
--   **API Routes** - Built-in API endpoints support in `pages/api/`
--   **Type Safety** - Full TypeScript support
-
-## Quick Start
-
-### Create a New Project
-
+1. Install dependencies:
 ```bash
-bunx bunact create my-app
-cd my-app
+bun install
 ```
 
-### Start Development Server
-
+2. Run the development server:
 ```bash
-bun dev
+bun run dev
 ```
 
-### Build for Production
+3. Open [http://localhost:3000](http://localhost:3000) with your browser.
 
-```bash
-bun run build
-```
+## Learn More
 
-## Project Structure
-
-```
-my-app/
-├── pages/
-│   ├── page.tsx              # Main page
-│   ├── layout.tsx            # Layout component
-│   ├── not-found.tsx         # 404 page
-│   ├── loading.tsx           # Loading UI
-│   ├── error.tsx             # Error boundary
-│   └── api/
-│       └── hello.ts          # API endpoint
-├── public/                   # Static files
-└── proxy.ts                  # Global middleware (optional)
-```
-
-## Core Features
-
-### Page Component
-
-```tsx
-// pages/page.tsx
-export const Page = async ({ params, searchParams, cookies, headers }) => {
-    const data = await fetch('...')
-
-    return {
-        metadata: {
-            title: 'My Page',
-            description: '...',
-        },
-        default: () => <div>{/* ... */}</div>,
-    }
-}
-```
-
-### Dynamic Routing
-
-```
-pages/
-├── [id]/page.tsx           # Matches /123
-├── [...slug]/page.tsx      # Matches /a/b/c
-└── [[...slug]]/page.tsx    # Matches / or /a/b/c
-```
-
-### Image Optimization
-
-```tsx
-import { Image } from 'bunact/ui/Image'
-
-<Image
-  src="/photo.jpg"
-  width={800}
-  height={600}
-  alt="Photo"
-  quality={80}
-/>
-
-// Fill mode
-<div style={{ position: 'relative', width: '100%', height: '400px' }}>
-  <Image
-    src="/banner.jpg"
-    fill
-    objectFit="cover"
-    alt="Banner"
-  />
-</div>
-```
-
-### ISR (Incremental Static Regeneration)
-
-```tsx
-// pages/blog/[id]/page.tsx
-export const revalidate = 60 // Revalidate every 60 seconds
-
-export const BlogPost = async ({ params }) => {
-    const post = await fetchPost(params.id)
-
-    return {
-        default: () => <article>{/* ... */}</article>,
-    }
-}
-```
-
-### API Routes
-
-```tsx
-// pages/api/users/[id].ts
-export const GET = async (request: Request, { params }) => {
-    const user = await db.user.findById(params.id)
-    return Response.json(user)
-}
-
-export const POST = async (request: Request) => {
-    const body = await request.json()
-    const user = await db.user.create(body)
-    return Response.json(user, { status: 201 })
-}
-```
-
-### Environment Variables
-
-```bash
-# .env
-SECRET_KEY=server-only-value              # Server-only
-BUNACT_PUBLIC_API_URL=https://api.com     # Available on client
-```
-
-```tsx
-// Server component
-const secret = process.env.SECRET_KEY // Server-only
-const apiUrl = process.env.BUNACT_PUBLIC_API_URL // Server + Client
-```
-
-### Configuration
-
-Create a `bunact.config.ts` (or `.js`, `.mjs`) file in your project root to customize framework behavior:
-
-```tsx
-// bunact.config.ts
-import type { BunactConfig } from 'bunact'
-
-export default {
-    port: 4000,
-    constants: {
-        server: {
-            defaultPort: 4000,
-        },
-        cache: {
-            maxIsrCacheSize: 2000,
-            maxImageCacheSizeMB: 1000,
-        },
-    },
-    plugins: [
-        {
-            name: 'my-plugin',
-            setup: async (config) => {
-                console.log('Plugin initialized!')
-            },
-        },
-    ],
-} satisfies BunactConfig
-```
-
-**Available configuration options:**
-
--   `port` - Development server port (default: 3000)
--   `pagesDir` - Pages directory path (default: `pages`)
--   `publicDir` - Public assets directory (default: `public`)
--   `cacheDir` - Cache directory (default: `.bunact/cache`)
--   `constants` - Override framework constants
--   `plugins` - Add custom plugins
-
-## Requirements
-
--   **Bun** ≥ 1.3.0
--   **React** 19
--   **TypeScript** 5
-
-## License
-
-MIT
-
-## Links
-
--   [GitHub](https://github.com/B-HS/Bunact)
+- [Bunact Documentation](https://github.com/your-org/bunact)
+- [React Documentation](https://react.dev)
