@@ -9,6 +9,8 @@ import { handleImageRequest } from './image-handler'
 import { isrCache } from './isr-cache'
 import { loadUserProxy, runProxyChain } from './proxy'
 import { serveStaticFile } from './static'
+import { serializeComponentTree } from '../serialization/serializer'
+import { createServerRegistry } from '../serialization/registry'
 
 let apiRoutesCache: ReturnType<typeof scanApiRoutes> | null = null
 let renderToReadableStream: any = null
@@ -248,11 +250,24 @@ export const fetch = async (request: Request, config: ResolvedBunactConfig) => {
         const serializedCache = JSON.stringify(promiseCache)
         const serializedPageProps = JSON.stringify(serializePageProps(pageProps))
 
+        // NEW: Serialize component tree for client-side hydration without page imports
+        const serverRegistry = createServerRegistry()
+        // TODO: Load pre-built registry from build process
+        // For now, registry will be empty and components will get auto-generated IDs
+
+        const serializedTree = await serializeComponentTree(componentTree, {
+            registry: serverRegistry,
+            pageProps: pageProps,
+            promiseCache: promiseCache,
+            includeMetadata: true,
+        })
+        const serializedTreeJson = JSON.stringify(serializedTree)
+
         const isDev = process.env.NODE_ENV !== 'production'
         const scripts = isDev ? ['/.bunact/hmr.js', `/.bunact/${bundleId}/${mainScript}`] : [`/.bunact/${bundleId}/${mainScript}`]
 
         const stream = await renderToReadableStream(componentTree, {
-            bootstrapScriptContent: `window.__BUNACT_PROMISE_CACHE__=${serializedCache};window.__BUNACT_PAGE_PROPS__=${serializedPageProps}`,
+            bootstrapScriptContent: `window.__BUNACT_TREE__=${serializedTreeJson};window.__BUNACT_PROMISE_CACHE__=${serializedCache};window.__BUNACT_PAGE_PROPS__=${serializedPageProps}`,
             bootstrapModules: scripts,
         })
 

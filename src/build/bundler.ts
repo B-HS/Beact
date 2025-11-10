@@ -76,6 +76,20 @@ export const createClientBundle = async (
                 }
             })
 
+            // Phase 2: Resolve serialization and registry modules
+            build.onResolve({ filter: /^bunact\/serialization\// }, (args) => {
+                const modulePath = args.path.replace('bunact/serialization/', '')
+                return {
+                    path: join(cwd, 'node_modules', 'bunact', 'dist', 'serialization', modulePath + '.js'),
+                }
+            })
+
+            build.onResolve({ filter: /^bunact\/registry\/client$/ }, () => {
+                return {
+                    path: join(cwd, 'node_modules', 'bunact', 'dist', 'registry', 'client.js'),
+                }
+            })
+
             build.onLoad({ filter: /.*/, namespace: 'context-promise-stub' }, async () => {
                 return {
                     contents: `
@@ -219,6 +233,20 @@ export const createClientBundle = async (
             outdir: outputDir,
             naming: '[name]-[hash].[ext]',
             plugins: [serverOnlyPlugin, cssInjectorPlugin],
+            // Phase 2: Exclude server-only modules from browser bundle
+            external: [
+                // Node.js built-in modules
+                'tls', 'net', 'crypto', 'fs', 'path', 'os', 'stream', 'http', 'https',
+                'child_process', 'dns', 'readline', 'zlib', 'perf_hooks',
+                // Server-only database clients
+                'mysql', 'mysql2', 'pg', 'sqlite3', '@libsql/client', 'mongodb',
+                // Server-only auth libraries
+                'better-auth', '@auth/core',
+                // Server-only ORMs
+                'drizzle-orm', 'prisma', 'typeorm', 'sequelize',
+                // Other server-only packages
+                '@node-rs/bcrypt', 'bcrypt', 'argon2',
+            ],
             define: {
                 'process.env.NODE_ENV': '"production"',
                 ...(config.publicEnvVars || {}),
