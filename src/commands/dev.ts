@@ -58,7 +58,8 @@ export const dev = async () => {
     const registryOutputDir = join(config.cacheDir, 'registries')
     console.log(`🔨 Building component registries...`)
     try {
-        await buildRegistryFiles(config.pagesDir, registryOutputDir)
+        // Scan entire project root, not just pages directory
+        await buildRegistryFiles(config.rootDir, registryOutputDir)
     } catch (err) {
         console.error('Failed to build registries:', err)
         console.log('Continuing without registries (may cause hydration issues)')
@@ -127,7 +128,8 @@ export const dev = async () => {
                 // Phase 2: Rebuild registries if component files changed
                 if (filename && (filename.endsWith('.tsx') || filename.endsWith('.jsx'))) {
                     try {
-                        await buildRegistryFiles(config.pagesDir, registryOutputDir)
+                        // Scan entire project root
+                        await buildRegistryFiles(config.rootDir, registryOutputDir)
                         console.log('🔄 Registries rebuilt')
                     } catch (err) {
                         console.error('Failed to rebuild registries:', err)
