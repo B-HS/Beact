@@ -444,68 +444,29 @@ const containsFetchCall = (node: ts.Node): boolean => {
 export const extractPageComponent = (code: string, filename: string): string => {
     const sourceFile = ts.createSourceFile(filename, code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
 
-    let componentCode: string | null = null
-    let asyncFunctionName: string | null = null
+    const asyncFunctions = new Map<string, string>()
+    const printer = ts.createPrinter()
 
-    const visitor = (node: ts.Node): void => {
-        // Pattern 1: export default async () => { return { metadata, default: Component } }
-        if (ts.isExportAssignment(node) && !node.isExportEquals) {
-            const expr = node.expression
+    const collectAsyncFunctions = (node: ts.Node): void => {
+        if (ts.isVariableStatement(node)) {
+            for (const decl of node.declarationList.declarations) {
+                if (ts.isIdentifier(decl.name) && decl.initializer &&
+                    ts.isArrowFunction(decl.initializer) &&
+                    decl.initializer.modifiers?.some(m => m.kind === ts.SyntaxKind.AsyncKeyword)) {
 
-            if (ts.isArrowFunction(expr) && expr.modifiers?.some(m => m.kind === ts.SyntaxKind.AsyncKeyword)) {
-                const body = expr.body
+                    const body = decl.initializer.body
+                    if (ts.isBlock(body)) {
+                        for (const statement of body.statements) {
+                            if (ts.isReturnStatement(statement) && statement.expression &&
+                                ts.isObjectLiteralExpression(statement.expression)) {
 
-                if (ts.isBlock(body)) {
-                    for (const statement of body.statements) {
-                        if (ts.isReturnStatement(statement) && statement.expression) {
-                            if (ts.isObjectLiteralExpression(statement.expression)) {
                                 for (const prop of statement.expression.properties) {
                                     if (ts.isPropertyAssignment(prop) &&
                                         ts.isIdentifier(prop.name) &&
                                         prop.name.text === 'default') {
-                                        const printer = ts.createPrinter()
-                                        componentCode = printer.printNode(ts.EmitHint.Unspecified, prop.initializer, sourceFile)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
 
-            // Pattern 2: export default SomeFunctionName
-            if (ts.isIdentifier(expr)) {
-                asyncFunctionName = expr.text
-            }
-        }
-
-        // Pattern 3: const SomePage = async () => { return { metadata, default: Component } }
-        if (ts.isVariableStatement(node)) {
-            for (const decl of node.declarationList.declarations) {
-                if (ts.isIdentifier(decl.name)) {
-                    const name = decl.name.text
-
-                    if (decl.initializer &&
-                        ts.isArrowFunction(decl.initializer) &&
-                        decl.initializer.modifiers?.some(m => m.kind === ts.SyntaxKind.AsyncKeyword)) {
-
-                        const body = decl.initializer.body
-
-                        if (ts.isBlock(body)) {
-                            for (const statement of body.statements) {
-                                if (ts.isReturnStatement(statement) && statement.expression) {
-                                    if (ts.isObjectLiteralExpression(statement.expression)) {
-                                        for (const prop of statement.expression.properties) {
-                                            if (ts.isPropertyAssignment(prop) &&
-                                                ts.isIdentifier(prop.name) &&
-                                                prop.name.text === 'default') {
-
-                                                if (asyncFunctionName === name) {
-                                                    const printer = ts.createPrinter()
-                                                    componentCode = printer.printNode(ts.EmitHint.Unspecified, prop.initializer, sourceFile)
-                                                }
-                                            }
-                                        }
+                                        const componentCode = printer.printNode(ts.EmitHint.Unspecified, prop.initializer, sourceFile)
+                                        asyncFunctions.set(decl.name.text, componentCode)
                                     }
                                 }
                             }
@@ -514,20 +475,63 @@ export const extractPageComponent = (code: string, filename: string): string => 
                 }
             }
         }
-
-        ts.forEachChild(node, visitor)
+        ts.forEachChild(node, collectAsyncFunctions)
     }
 
-    visitor(sourceFile)
+    let exportedFunctionName: string | null = null
+    let directExportComponent: string | null = null
 
-    if (componentCode) {
-        let imports = code.split('\n').filter(line => {
-            const trimmed = line.trim()
-            return trimmed.startsWith('import') && !trimmed.includes('Metadata')
-        }).join('\n')
+    const findExport = (node: ts.Node): void => {
+        if (ts.isExportAssignment(node) && !node.isExportEquals) {
+            if (ts.isIdentifier(node.expression)) {
+                exportedFunctionName = node.expression.text
+            } else if (ts.isArrowFunction(node.expression) &&
+                node.expression.modifiers?.some(m => m.kind === ts.SyntaxKind.AsyncKeyword)) {
+
+                const body = node.expression.body
+                if (ts.isBlock(body)) {
+                    for (const statement of body.statements) {
+                        if (ts.isReturnStatement(statement) && statement.expression &&
+                            ts.isObjectLiteralExpression(statement.expression)) {
+
+                            for (const prop of statement.expression.properties) {
+                                if (ts.isPropertyAssignment(prop) &&
+                                    ts.isIdentifier(prop.name) &&
+                                    prop.name.text === 'default') {
+
+                                    directExportComponent = printer.printNode(ts.EmitHint.Unspecified, prop.initializer, sourceFile)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ts.forEachChild(node, findExport)
+    }
+
+    collectAsyncFunctions(sourceFile)
+    findExport(sourceFile)
+
+    let imports = code.split('\n').filter(line => {
+        const trimmed = line.trim()
+        return trimmed.startsWith('import') && !trimmed.includes('Metadata')
+    }).join('\n')
+
+    if (directExportComponent) {
+        console.log(`[extractPageComponent] Direct export transformation: ${filename}`)
+        return `${imports}\n\nexport default ${directExportComponent}\n`
+    }
+
+    if (exportedFunctionName && asyncFunctions.has(exportedFunctionName)) {
+        const componentCode = asyncFunctions.get(exportedFunctionName)!
+
+        console.log(`[extractPageComponent] Transformed ${filename}`)
+        console.log(`[extractPageComponent] Exported function: ${exportedFunctionName}`)
 
         return `${imports}\n\nexport default ${componentCode}\n`
     }
 
+    console.log(`[extractPageComponent] No transformation for ${filename}`)
     return code
 }
