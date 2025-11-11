@@ -46,11 +46,18 @@ export const createClientBundle = async (
     const absoluteErrorPath = errorPath ? (errorPath.startsWith('../') ? errorPath.replace('../', 'bunact/') : errorPath) : undefined
     const absoluteLoadingPath = loadingPath ? (loadingPath.startsWith('../') ? loadingPath.replace('../', 'bunact/') : loadingPath) : undefined
 
-    const hydrateScript = createHydrateScript(absoluteLayoutPaths, absolutePagePath, absoluteErrorPath, absoluteLoadingPath)
-
     const tempDir = join(cwd, '.bunact-temp')
     mkdirSync(tempDir, { recursive: true })
+
+    // Transform page.tsx and save to temp file
+    const pageCode = await Bun.file(absolutePagePath).text()
+    const transformedPageCode = extractPageComponent(pageCode, absolutePagePath)
+    const transformedPageFile = join(tempDir, `transformed-${bundleId}.tsx`)
     const tempFile = join(tempDir, `${bundleId}.tsx`)
+
+    writeFileSync(transformedPageFile, transformedPageCode)
+
+    const hydrateScript = createHydrateScript(absoluteLayoutPaths, transformedPageFile, absoluteErrorPath, absoluteLoadingPath)
 
     writeFileSync(tempFile, hydrateScript)
 
@@ -92,8 +99,14 @@ export const createClientBundle = async (
             build.onLoad({ filter: /\.(tsx|ts)$/ }, async (args) => {
                 let code = await Bun.file(args.path).text()
 
+                console.log(`[onLoad] Processing: ${args.path}`)
+                console.log(`[onLoad] Has 'use client'? ${hasUseClientDirective(code)}`)
+                console.log(`[onLoad] Is /pages/? ${args.path.includes('/pages/')}`)
+                console.log(`[onLoad] Is page.tsx? ${args.path.endsWith('/page.tsx') || args.path.endsWith('/page.ts')}`)
+
                 if (hasUseClientDirective(code)) {
                     const cleanCode = code.replace(/^["']use client["'];?\s*\n?/m, '')
+                    console.log(`[onLoad] Removing 'use client' directive`)
                     return {
                         contents: cleanCode,
                         loader: 'tsx',
@@ -112,8 +125,10 @@ export const createClientBundle = async (
                     // Extract Component from async Page pattern for page.tsx files
                     let transformed = code
                     if (args.path.endsWith('/page.tsx') || args.path.endsWith('/page.ts')) {
+                        console.log(`[onLoad] Calling extractPageComponent for ${args.path}`)
                         transformed = extractPageComponent(code, args.path)
                     } else {
+                        console.log(`[onLoad] Calling wrapServerOnlyCode for ${args.path}`)
                         transformed = wrapServerOnlyCode(code, args.path)
                     }
 
@@ -125,6 +140,7 @@ export const createClientBundle = async (
                     }
                 }
 
+                console.log(`[onLoad] Returning original code for ${args.path}`)
                 return {
                     contents: code,
                     loader: 'tsx',
@@ -274,10 +290,12 @@ export const createClientBundle = async (
         )
 
         rmSync(tempFile, { force: true })
+        rmSync(transformedPageFile, { force: true })
 
         return { bundleId, outputDir, mainScript, cssFile }
     } catch (error) {
         rmSync(tempFile, { force: true })
+        rmSync(transformedPageFile, { force: true })
         throw error
     }
 }
