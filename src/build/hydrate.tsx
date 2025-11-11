@@ -28,7 +28,7 @@ import Page from '${pagePath}'
       (children, Layout, index) => {
         const isRootLayout = index === 0
         const layoutProps = isRootLayout ? { children, metadata: pageProps.metadata } : { children }
-        return createElement(Layout, layoutProps, null)
+        return createElement(Layout.default || Layout, layoutProps, null)
       },
       createElement(Page, pageProps)
     )
