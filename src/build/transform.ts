@@ -527,14 +527,17 @@ export const extractPageComponent = (code: string, filename: string): string => 
         const componentCode = asyncFunctions.get(exportedFunctionName)!
         const result = `${imports}\n\nexport default ${componentCode}\n`
 
-        console.log(`[extractPageComponent] Transformed ${filename}`)
-        console.log(`[extractPageComponent] Exported function: ${exportedFunctionName}`)
-        console.log(`[extractPageComponent] Component code: ${componentCode}`)
-        console.log(`[extractPageComponent] Full result:\n${result}`)
+        console.log(`[extractPageComponent] ✅ Transformed ${filename}`)
+        console.log(`[extractPageComponent] Function: ${exportedFunctionName}`)
+        console.log(`[extractPageComponent] Component:\n${componentCode.substring(0, 200)}...`)
+        console.log(`[extractPageComponent] Result length: ${result.length} chars`)
 
         return result
     }
 
-    console.log(`[extractPageComponent] No transformation for ${filename}`)
+    console.log(`[extractPageComponent] ⚠️  No transformation for ${filename}`)
+    console.log(`[extractPageComponent] exportedFunctionName: ${exportedFunctionName}`)
+    console.log(`[extractPageComponent] asyncFunctions size: ${asyncFunctions.size}`)
+    console.log(`[extractPageComponent] asyncFunctions keys: ${Array.from(asyncFunctions.keys()).join(', ')}`)
     return code
 }

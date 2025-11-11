@@ -1,4 +1,4 @@
-export const createHydrateScript = (layoutPaths: string[], pageCode: string, errorPath?: string, loadingPath?: string) => {
+export const createHydrateScript = (layoutPaths: string[], pagePath: string, errorPath?: string, loadingPath?: string) => {
     const layoutImports = layoutPaths
         .map((path, index) => `import Layout${index} from '${path}'`)
         .join('\n')
@@ -7,14 +7,11 @@ export const createHydrateScript = (layoutPaths: string[], pageCode: string, err
         .map((_, index) => `Layout${index}`)
         .join(', ')
 
-    const pageCodeWithoutExport = pageCode.replace(/export\s+default\s+/, 'const Page = ')
-
     return `
 import { hydrateRoot } from 'react-dom/client'
 import { createElement } from 'react'
 ${layoutImports}
-
-${pageCodeWithoutExport}
+import Page from '${pagePath}'
 
 ;(() => {
   try {
