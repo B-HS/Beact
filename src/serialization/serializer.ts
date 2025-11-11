@@ -154,8 +154,11 @@ function serializeType(type: any, registry: ServerComponentRegistry): string | C
         }
     }
 
-    // Unknown type - serialize as string
-    return String(type)
+    // Unknown type - create ComponentRef with fallback
+    console.warn(`Unknown component type, creating fallback:`, type)
+    return {
+        $$ref: `unknown:${typeof type === 'object' ? JSON.stringify(type).slice(0, 50) : String(type)}`,
+    } as ComponentRef
 }
 
 /**

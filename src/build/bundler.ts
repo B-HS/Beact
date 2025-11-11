@@ -77,28 +77,6 @@ export const createClientBundle = async (
                 }
             })
 
-            // Phase 2: Resolve serialization and registry modules
-            build.onResolve({ filter: /^bunact\/serialization\// }, (args) => {
-                const modulePath = args.path.replace('bunact/serialization/', '')
-                return {
-                    path: join(cwd, 'node_modules', 'bunact', 'dist', 'serialization', modulePath + '.js'),
-                }
-            })
-
-            build.onResolve({ filter: /^bunact\/registry\/client$/ }, () => {
-                // Try to use generated registry first, fallback to empty registry
-                const generatedPath = join(config.cacheDir, 'registries', 'client-registry.ts')
-                const fallbackPath = join(cwd, 'node_modules', 'bunact', 'dist', 'registry', 'client.js')
-
-                // Check if generated registry exists
-                const { existsSync } = require('fs')
-                if (existsSync(generatedPath)) {
-                    return { path: generatedPath }
-                }
-
-                return { path: fallbackPath }
-            })
-
             build.onLoad({ filter: /.*/, namespace: 'context-promise-stub' }, async () => {
                 return {
                     contents: `
@@ -242,10 +220,9 @@ export const createClientBundle = async (
             outdir: outputDir,
             naming: '[name]-[hash].[ext]',
             plugins: [serverOnlyPlugin, cssInjectorPlugin],
-            // Phase 2: Only exclude Node.js built-in modules
-            // Server-only packages (mysql2, better-auth, etc.) are automatically excluded
-            // because Phase 2 prevents server pages from being bundled into client
-            // 'use client' components only bundle what they actually use
+            // Phase 1: Only exclude Node.js built-in modules
+            // Server-only packages are handled by wrapServerOnlyCode transform
+            // which wraps server imports in conditional checks
             external: [
                 ...builtinModules,
                 ...builtinModules.map(m => `node:${m}`)

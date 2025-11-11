@@ -9,8 +9,6 @@ import { handleImageRequest } from './image-handler'
 import { isrCache } from './isr-cache'
 import { loadUserProxy, runProxyChain } from './proxy'
 import { serveStaticFile } from './static'
-import { serializeComponentTree } from '../serialization/serializer'
-import { createServerRegistry } from '../serialization/registry'
 
 let apiRoutesCache: ReturnType<typeof scanApiRoutes> | null = null
 let renderToReadableStream: any = null
@@ -250,30 +248,11 @@ export const fetch = async (request: Request, config: ResolvedBunactConfig) => {
         const serializedCache = JSON.stringify(promiseCache)
         const serializedPageProps = JSON.stringify(serializePageProps(pageProps))
 
-        // NEW: Serialize component tree for client-side hydration without page imports
-        // Phase 2: Load pre-built registry from generated files
-        let serverRegistry = createServerRegistry()
-        try {
-            const registryPath = join(config.cacheDir, 'registries', 'server-registry')
-            const registryModule = await import(registryPath)
-            serverRegistry = registryModule.serverComponentRegistry || serverRegistry
-        } catch (err) {
-            console.warn('Failed to load server registry, using empty registry:', err)
-        }
-
-        const serializedTree = await serializeComponentTree(componentTree, {
-            registry: serverRegistry,
-            pageProps: pageProps,
-            promiseCache: promiseCache,
-            includeMetadata: true,
-        })
-        const serializedTreeJson = JSON.stringify(serializedTree)
-
         const isDev = process.env.NODE_ENV !== 'production'
         const scripts = isDev ? ['/.bunact/hmr.js', `/.bunact/${bundleId}/${mainScript}`] : [`/.bunact/${bundleId}/${mainScript}`]
 
         const stream = await renderToReadableStream(componentTree, {
-            bootstrapScriptContent: `window.__BUNACT_TREE__=${serializedTreeJson};window.__BUNACT_PROMISE_CACHE__=${serializedCache};window.__BUNACT_PAGE_PROPS__=${serializedPageProps}`,
+            bootstrapScriptContent: `window.__BUNACT_PROMISE_CACHE__=${serializedCache};window.__BUNACT_PAGE_PROPS__=${serializedPageProps}`,
             bootstrapModules: scripts,
         })
 
