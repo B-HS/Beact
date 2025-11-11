@@ -209,8 +209,9 @@ function deserializeValue(value: any, options: DeserializationOptions): any {
         return deserialized
     }
 
-    // Fallback
-    return value
+    // Fallback - log unexpected values
+    console.error('Unexpected value type in deserializeValue:', typeof value, value)
+    return null
 }
 
 /**
