@@ -46,7 +46,10 @@ export const createClientBundle = async (
     const absoluteErrorPath = errorPath ? (errorPath.startsWith('../') ? errorPath.replace('../', 'bunact/') : errorPath) : undefined
     const absoluteLoadingPath = loadingPath ? (loadingPath.startsWith('../') ? loadingPath.replace('../', 'bunact/') : loadingPath) : undefined
 
-    const hydrateScript = createHydrateScript(absoluteLayoutPaths, absolutePagePath, absoluteErrorPath, absoluteLoadingPath)
+    let pageCode = await Bun.file(absolutePagePath).text()
+    const transformedPageCode = extractPageComponent(pageCode, absolutePagePath)
+
+    const hydrateScript = createHydrateScript(absoluteLayoutPaths, transformedPageCode, absoluteErrorPath, absoluteLoadingPath)
 
     const tempDir = join(cwd, '.bunact-temp')
     mkdirSync(tempDir, { recursive: true })
