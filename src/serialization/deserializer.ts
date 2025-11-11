@@ -132,8 +132,9 @@ function deserializeType(type: string | ComponentRef, registry: ClientComponentR
         return type
     }
 
-    // Fallback
-    return type
+    // Fallback for unknown types
+    console.error(`Unknown type received in deserializeType:`, type)
+    return 'div'
 }
 
 /**
