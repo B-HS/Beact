@@ -228,7 +228,7 @@ export const createClientBundle = async (
                 ...builtinModules.map(m => `node:${m}`)
             ],
             define: {
-                'process.env.NODE_ENV': '"production"',
+                'process.env.NODE_ENV': process.env.NODE_ENV === 'production' ? '"production"' : '"development"',
                 ...(config.publicEnvVars || {}),
             },
         })
