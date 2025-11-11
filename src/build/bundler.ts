@@ -99,21 +99,16 @@ export const createClientBundle = async (
             build.onLoad({ filter: /\.(tsx|ts)$/ }, async (args) => {
                 let code = await Bun.file(args.path).text()
 
-                console.log(`[onLoad] Processing: ${args.path}`)
-                console.log(`[onLoad] Has 'use client'? ${hasUseClientDirective(code)}`)
-                console.log(`[onLoad] Is /pages/? ${args.path.includes('/pages/')}`)
-                console.log(`[onLoad] Is page.tsx? ${args.path.endsWith('/page.tsx') || args.path.endsWith('/page.ts')}`)
-
                 if (hasUseClientDirective(code)) {
                     const cleanCode = code.replace(/^["']use client["'];?\s*\n?/m, '')
-                    console.log(`[onLoad] Removing 'use client' directive`)
                     return {
                         contents: cleanCode,
                         loader: 'tsx',
                     }
                 }
 
-                if (args.path.includes('/pages/')) {
+                // Skip page.tsx files - they are pre-transformed and saved as separate files
+                if (args.path.includes('/pages/') && !args.path.endsWith('/page.tsx') && !args.path.endsWith('/page.ts')) {
                     const cssImports: string[] = []
                     const importRegex = /import\s+['"](.*?\.css)['"]/g
                     let match
@@ -122,16 +117,8 @@ export const createClientBundle = async (
                         cssImports.push(match[0])
                     }
 
-                    // Extract Component from async Page pattern for page.tsx files
-                    let transformed = code
-                    if (args.path.endsWith('/page.tsx') || args.path.endsWith('/page.ts')) {
-                        console.log(`[onLoad] Calling extractPageComponent for ${args.path}`)
-                        transformed = extractPageComponent(code, args.path)
-                    } else {
-                        console.log(`[onLoad] Calling wrapServerOnlyCode for ${args.path}`)
-                        transformed = wrapServerOnlyCode(code, args.path)
-                    }
-
+                    // Apply wrapServerOnlyCode for layout.tsx and other server files
+                    const transformed = wrapServerOnlyCode(code, args.path)
                     const finalCode = cssImports.length > 0 ? `${cssImports.join('\n')}\n${transformed}` : transformed
 
                     return {
@@ -140,7 +127,6 @@ export const createClientBundle = async (
                     }
                 }
 
-                console.log(`[onLoad] Returning original code for ${args.path}`)
                 return {
                     contents: code,
                     loader: 'tsx',
