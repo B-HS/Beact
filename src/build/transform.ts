@@ -440,3 +440,62 @@ const containsFetchCall = (node: ts.Node): boolean => {
     visitor(node)
     return hasFetch
 }
+
+export const extractPageComponent = (code: string, filename: string): string => {
+    // Extract the Component from async Page pattern for client-side hydration
+    // Pattern: export default async () => { return { metadata, default: Component } }
+    // Result: export default Component
+
+    const sourceFile = ts.createSourceFile(filename, code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
+
+    let componentCode: string | null = null
+
+    const visitor = (node: ts.Node): void => {
+        // Find: export default async () => { ... }
+        if (ts.isExportAssignment(node) && !node.isExportEquals) {
+            const expr = node.expression
+
+            // Check if it's async arrow function
+            if (ts.isArrowFunction(expr) && expr.modifiers?.some(m => m.kind === ts.SyntaxKind.AsyncKeyword)) {
+                const body = expr.body
+
+                // Check if body is a block with return statement
+                if (ts.isBlock(body)) {
+                    for (const statement of body.statements) {
+                        if (ts.isReturnStatement(statement) && statement.expression) {
+                            // Check if return { metadata, default: Component }
+                            if (ts.isObjectLiteralExpression(statement.expression)) {
+                                for (const prop of statement.expression.properties) {
+                                    if (ts.isPropertyAssignment(prop) &&
+                                        ts.isIdentifier(prop.name) &&
+                                        prop.name.text === 'default') {
+                                        // Extract the Component part
+                                        const printer = ts.createPrinter()
+                                        componentCode = printer.printNode(ts.EmitHint.Unspecified, prop.initializer, sourceFile)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        ts.forEachChild(node, visitor)
+    }
+
+    visitor(sourceFile)
+
+    if (componentCode) {
+        // Remove imports related to Metadata type (not needed in client)
+        let imports = code.split('\n').filter(line => {
+            const trimmed = line.trim()
+            return trimmed.startsWith('import') && !trimmed.includes('Metadata')
+        }).join('\n')
+
+        return `${imports}\n\nexport default ${componentCode}\n`
+    }
+
+    // If pattern not found, return original code
+    return code
+}

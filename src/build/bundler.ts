@@ -3,7 +3,7 @@ import { writeFileSync, mkdirSync, rmSync, existsSync, readFileSync } from 'fs'
 import { join } from 'path'
 import { createHash } from 'crypto'
 import { builtinModules } from 'module'
-import { wrapServerOnlyCode, hasUseClientDirective } from './transform'
+import { wrapServerOnlyCode, hasUseClientDirective, extractPageComponent } from './transform'
 import type { BunPlugin } from 'bun'
 import type { ResolvedBunactConfig, BundleContext, CSSHandler, LoadHandler, ResolveHandler } from '../types'
 
@@ -109,7 +109,13 @@ export const createClientBundle = async (
                         cssImports.push(match[0])
                     }
 
-                    const transformed = wrapServerOnlyCode(code, args.path)
+                    // Extract Component from async Page pattern for page.tsx files
+                    let transformed = code
+                    if (args.path.endsWith('/page.tsx') || args.path.endsWith('/page.ts')) {
+                        transformed = extractPageComponent(code, args.path)
+                    } else {
+                        transformed = wrapServerOnlyCode(code, args.path)
+                    }
 
                     const finalCode = cssImports.length > 0 ? `${cssImports.join('\n')}\n${transformed}` : transformed
 
