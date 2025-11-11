@@ -276,11 +276,11 @@ export const createClientBundle = async (
             ),
         )
 
-        rmSync(tempDir, { recursive: true, force: true })
+        rmSync(tempFile, { force: true })
 
         return { bundleId, outputDir, mainScript, cssFile }
     } catch (error) {
-        rmSync(tempDir, { recursive: true, force: true })
+        rmSync(tempFile, { force: true })
         throw error
     }
 }
