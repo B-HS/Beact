@@ -184,7 +184,10 @@ export const buildComponentTree = async (
             ...(isRootLayout && { metadata }),
         })
         ssrCache.set(layout, layoutFactory)
-        tree = await layoutFactory.default()
+        tree = await layoutFactory.default({
+            children: tree,
+            ...(isRootLayout && { metadata }),
+        })
     }
 
     return tree

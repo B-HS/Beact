@@ -19,7 +19,7 @@ export interface SerializablePageProps {
 
 export interface ComponentFactoryResult {
     metadata?: Metadata[]
-    default: () => ReactElement | Promise<ReactElement>
+    default: (props?: { children?: ReactNode; metadata?: Metadata[] }) => ReactElement | Promise<ReactElement>
 }
 
 export interface ComponentFactory {
