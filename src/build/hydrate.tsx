@@ -15,7 +15,7 @@ export const createHydrateScript = (layoutPaths: string[], pagePath: string, err
 
     return `
 import { hydrateRoot } from 'react-dom/client'
-import React from 'react'
+import { createElement } from 'react'
 import Page from '${pagePath}'
 ${layoutImports}
 
@@ -28,11 +28,11 @@ ${layoutImports}
       headers: {}
     }
 
-    // Dynamically nest layouts using reduceRight
+    // Dynamically nest layouts using reduceRight with createElement
     const layouts = [${layoutList}]
     const tree = layouts.reduceRight(
-      (children, Layout) => <Layout>{children}</Layout>,
-      <Page {...pageProps} />
+      (children, Layout) => createElement(Layout, null, children),
+      createElement(Page, pageProps)
     )
 
     hydrateRoot(document, tree)
