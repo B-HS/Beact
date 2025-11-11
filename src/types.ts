@@ -14,6 +14,7 @@ export interface SerializablePageProps {
     searchParams?: Record<string, string | string[]>
     cookies?: Record<string, string>
     headers?: Record<string, string>
+    metadata?: Metadata[]
 }
 
 export interface ComponentFactoryResult {

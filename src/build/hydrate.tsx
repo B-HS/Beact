@@ -19,12 +19,17 @@ import Page from '${pagePath}'
       params: {},
       searchParams: {},
       cookies: {},
-      headers: {}
+      headers: {},
+      metadata: []
     }
 
     const layouts = [${layoutList}]
     const tree = layouts.reduceRight(
-      (children, Layout) => createElement(Layout, null, children),
+      (children, Layout, index) => {
+        const isRootLayout = index === 0
+        const layoutProps = isRootLayout ? { children, metadata: pageProps.metadata } : { children }
+        return createElement(Layout, layoutProps, null)
+      },
       createElement(Page, pageProps)
     )
 

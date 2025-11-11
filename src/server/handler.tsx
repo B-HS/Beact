@@ -4,7 +4,7 @@ import { createClientBundle, getBundleOutputDir } from '../build/bundler'
 import { promiseStorage } from '../context/promise'
 import { handleApiRequest, scanApiRoutes } from '../router'
 import { buildComponentTree, getNotFoundComponent, getRouteComponents } from '../router/router'
-import type { PageProps, ResolvedBunactConfig, SerializablePageProps } from '../types'
+import type { PageProps, ResolvedBunactConfig, SerializablePageProps, Metadata } from '../types'
 import { handleImageRequest } from './image-handler'
 import { isrCache } from './isr-cache'
 import { loadUserProxy, runProxyChain } from './proxy'
@@ -58,7 +58,7 @@ const extractPageProps = (request: Request) => {
     return pageProps
 }
 
-const serializePageProps = (pageProps: PageProps): SerializablePageProps => {
+const serializePageProps = (pageProps: PageProps, metadata?: Metadata[]): SerializablePageProps => {
     try {
         const headersRecord: Record<string, string> = {}
 
@@ -77,6 +77,7 @@ const serializePageProps = (pageProps: PageProps): SerializablePageProps => {
             searchParams: pageProps.searchParams || {},
             cookies: pageProps.cookies || {},
             headers: headersRecord,
+            metadata: metadata || [],
         }
     } catch (err) {
         console.error('Failed to serialize PageProps:', err)
@@ -85,6 +86,7 @@ const serializePageProps = (pageProps: PageProps): SerializablePageProps => {
             searchParams: {},
             cookies: {},
             headers: {},
+            metadata: [],
         }
     }
 }
@@ -171,7 +173,7 @@ export const fetch = async (request: Request, config: ResolvedBunactConfig) => {
 
                 const promiseCache = Object.fromEntries(cache.entries())
                 const serializedCache = JSON.stringify(promiseCache)
-                const serializedPageProps = JSON.stringify(serializePageProps(pageProps))
+                const serializedPageProps = JSON.stringify(serializePageProps(pageProps, []))
 
                 const isDev = process.env.NODE_ENV !== 'production'
                 const scripts = isDev ? ['/.bunact/hmr.js', `/.bunact/${bundleId}/${mainScript}`] : [`/.bunact/${bundleId}/${mainScript}`]
@@ -221,7 +223,7 @@ export const fetch = async (request: Request, config: ResolvedBunactConfig) => {
                     const componentTree = await buildComponentTree(layouts, page, pageProps, metadata)
                     const promiseCache = Object.fromEntries(renderCache.entries())
                     const serializedCache = JSON.stringify(promiseCache)
-                    const serializedPageProps = JSON.stringify(serializePageProps(pageProps))
+                    const serializedPageProps = JSON.stringify(serializePageProps(pageProps, metadata))
                     const stream = await renderToReadableStream(componentTree, {
                         bootstrapScriptContent: `window.__BUNACT_PROMISE_CACHE__=${serializedCache};window.__BUNACT_PAGE_PROPS__=${serializedPageProps}`,
                         bootstrapModules: scripts,
@@ -246,7 +248,7 @@ export const fetch = async (request: Request, config: ResolvedBunactConfig) => {
 
         const promiseCache = Object.fromEntries(cache.entries())
         const serializedCache = JSON.stringify(promiseCache)
-        const serializedPageProps = JSON.stringify(serializePageProps(pageProps))
+        const serializedPageProps = JSON.stringify(serializePageProps(pageProps, metadata))
 
         const isDev = process.env.NODE_ENV !== 'production'
         const scripts = isDev ? ['/.bunact/hmr.js', `/.bunact/${bundleId}/${mainScript}`] : [`/.bunact/${bundleId}/${mainScript}`]
