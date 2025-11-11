@@ -90,25 +90,11 @@ const scanDirectory = (dir: string, baseDir: string, currentPath: string = '', p
         }
     }
 
-    if (layoutPath) {
-        routes[urlPath].layouts.push(join(relativePath, layoutPath))
-    }
-
-    if (pagePath) {
-        routes[urlPath].page = join(relativePath, pagePath)
-    }
-
-    if (errorPath) {
-        routes[urlPath].error = join(relativePath, errorPath)
-    }
-
-    if (notFoundPath) {
-        routes[urlPath].notFound = join(relativePath, notFoundPath)
-    }
-
-    if (loadingPath) {
-        routes[urlPath].loading = join(relativePath, loadingPath)
-    }
+    if (layoutPath) routes[urlPath].layouts.push(join(relativePath, layoutPath))
+    if (pagePath) routes[urlPath].page = join(relativePath, pagePath)
+    if (errorPath) routes[urlPath].error = join(relativePath, errorPath)
+    if (notFoundPath) routes[urlPath].notFound = join(relativePath, notFoundPath)
+    if (loadingPath) routes[urlPath].loading = join(relativePath, loadingPath)
 
     entries.forEach((entry) => {
         const fullPath = join(dir, entry)

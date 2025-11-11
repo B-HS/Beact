@@ -36,7 +36,8 @@ export const createClientBundle = async (
 
     const resolveImportPath = (path: string) => {
         if (path.startsWith('../')) {
-            return path.replace('../', 'bunact/')
+            const relativePath = path.replace('../', '')
+            return join(cwd, 'node_modules', 'bunact', 'dist', relativePath + '.js')
         }
         return join(pagesDir, path)
     }
