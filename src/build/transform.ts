@@ -525,11 +525,14 @@ export const extractPageComponent = (code: string, filename: string): string => 
 
     if (exportedFunctionName && asyncFunctions.has(exportedFunctionName)) {
         const componentCode = asyncFunctions.get(exportedFunctionName)!
+        const result = `${imports}\n\nexport default ${componentCode}\n`
 
         console.log(`[extractPageComponent] Transformed ${filename}`)
         console.log(`[extractPageComponent] Exported function: ${exportedFunctionName}`)
+        console.log(`[extractPageComponent] Component code: ${componentCode}`)
+        console.log(`[extractPageComponent] Full result:\n${result}`)
 
-        return `${imports}\n\nexport default ${componentCode}\n`
+        return result
     }
 
     console.log(`[extractPageComponent] No transformation for ${filename}`)
