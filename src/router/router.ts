@@ -49,7 +49,7 @@ export const collectMetadata = async (layouts: ComponentFactory[], page: Compone
     const metadataList: Metadata[] = []
 
     for (const layout of layouts) {
-        const layoutFactory = await layout.default(pageProps)
+        const layoutFactory = await layout.default({ ...pageProps, children: null })
         if (layoutFactory.metadata && Array.isArray(layoutFactory.metadata)) {
             metadataList.push(...layoutFactory.metadata)
         }
