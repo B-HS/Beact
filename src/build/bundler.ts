@@ -117,8 +117,13 @@ export const createClientBundle = async (
                         cssImports.push(match[0])
                     }
 
-                    // Apply wrapServerOnlyCode for layout.tsx and other server files
-                    const transformed = wrapServerOnlyCode(code, args.path)
+                    // Extract Component from async Page pattern for layout.tsx
+                    let transformed = code
+                    if (args.path.endsWith('/layout.tsx') || args.path.endsWith('/layout.ts')) {
+                        transformed = extractPageComponent(code, args.path)
+                    } else {
+                        transformed = wrapServerOnlyCode(code, args.path)
+                    }
                     const finalCode = cssImports.length > 0 ? `${cssImports.join('\n')}\n${transformed}` : transformed
 
                     return {
