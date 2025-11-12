@@ -58,7 +58,7 @@ console.log('Ready at http://localhost:' + config.port)
         target: 'bun',
         minify: true,
         sourcemap: 'none',
-        external: ['react', 'react-dom'],
+        external: ['react', 'react-dom', 'bunact'],
     })
 
     if (!result.success) {

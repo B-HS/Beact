@@ -1,6 +1,6 @@
 {
     "name": "bunact",
-    "version": "0.5.9",
+    "version": "0.6.0",
     "description": "A lightweight React framework with SSR and SSG support",
     "keywords": [
         "react",
@@ -55,6 +55,10 @@
         "./config": {
             "types": "./dist/config/index.d.ts",
             "import": "./dist/config/index.js"
+        },
+        "./config/env": {
+            "types": "./dist/config/env.d.ts",
+            "import": "./dist/config/env.js"
         },
         "./metadata": {
             "types": "./dist/metadata/index.d.ts",
