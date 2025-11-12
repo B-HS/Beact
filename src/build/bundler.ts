@@ -3,7 +3,7 @@ import { writeFileSync, mkdirSync, rmSync, existsSync, readFileSync } from 'fs'
 import { join } from 'path'
 import { createHash } from 'crypto'
 import { builtinModules } from 'module'
-import { wrapServerOnlyCode, hasUseClientDirective, extractPageComponent } from './transform'
+import { wrapServerOnlyCode, hasUseClientDirective } from './transform'
 import type { BunPlugin } from 'bun'
 import type { ResolvedBunactConfig, BundleContext, CSSHandler, LoadHandler, ResolveHandler } from '../types'
 
