@@ -237,7 +237,12 @@ export const createClientBundle = async (
             // Phase 1: Only exclude Node.js built-in modules
             // Server-only packages are handled by wrapServerOnlyCode transform
             // which wraps server imports in conditional checks
+            // React must be external to prevent multiple instances in HMR
             external: [
+                'react',
+                'react-dom',
+                'react-dom/client',
+                'react-dom/server',
                 ...builtinModules,
                 ...builtinModules.map(m => `node:${m}`)
             ],
