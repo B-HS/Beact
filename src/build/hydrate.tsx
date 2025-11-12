@@ -13,7 +13,7 @@ import { createElement } from 'react'
 ${layoutImports}
 import Page from '${pagePath}'
 
-;(() => {
+;(async () => {
   try {
     const pageProps = window.__BUNACT_PAGE_PROPS__ || {
       params: {},
@@ -23,19 +23,26 @@ import Page from '${pagePath}'
       metadata: []
     }
 
+    const pageFactory = await Page.default(pageProps)
+    const PageComponent = await pageFactory.default()
+
     const layouts = [${layoutList}]
-    const tree = layouts.reduceRight(
-      (children, Layout, index) => {
-        const isRootLayout = index === 0
-        const layoutProps = isRootLayout ? { children, metadata: pageProps.metadata } : { children }
-        return createElement(Layout.default || Layout, layoutProps)
-      },
-      createElement(Page.default || Page, pageProps)
-    )
+    let tree = PageComponent
+
+    for (let i = layouts.length - 1; i >= 0; i--) {
+      const Layout = layouts[i]
+      const isRootLayout = i === 0
+      const layoutProps = {
+        children: tree,
+        ...(isRootLayout && { metadata: pageProps.metadata })
+      }
+      const layoutFactory = await Layout.default(layoutProps)
+      tree = await layoutFactory.default(layoutProps)
+    }
 
     hydrateRoot(document, tree)
 
-    console.log('✅ Hydration complete (Phase 1 architecture)')
+    console.log('✅ Hydration complete')
   } catch (err) {
     console.error('❌ Hydration failed:', err)
   }
