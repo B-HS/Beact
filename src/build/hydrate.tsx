@@ -23,7 +23,7 @@ import Page from '${pagePath}'
       metadata: []
     }
 
-    const pageFactory = await Page.default(pageProps)
+    const pageFactory = await Page(pageProps)
     const PageComponent = await pageFactory.default()
 
     const layouts = [${layoutList}]
@@ -36,7 +36,7 @@ import Page from '${pagePath}'
         children: tree,
         ...(isRootLayout && { metadata: pageProps.metadata })
       }
-      const layoutFactory = await Layout.default(layoutProps)
+      const layoutFactory = await Layout(layoutProps)
       tree = await layoutFactory.default(layoutProps)
     }
 
