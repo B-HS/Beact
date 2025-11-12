@@ -1,7 +1,7 @@
 import { fetch as handleRequest } from '../server'
 import { loadConfig } from '../config'
 import { getPublicEnvVars } from '../config/env'
-import { wrapServerOnlyCode, clearBundleCache } from '../build'
+import { wrapServerOnlyCode, clearBundleCache, hasUseClientDirective, wrapClientCode } from '../build'
 import { buildRegistryFiles } from '../build/registry-builder'
 import { plugin } from 'bun'
 import { watch } from 'fs'
@@ -13,6 +13,15 @@ plugin({
     setup(build) {
         build.onLoad({ filter: /\.(tsx|ts)$/ }, async (args) => {
             const code = await Bun.file(args.path).text()
+
+            // Handle "use client" directive - wrap client components for server
+            if (hasUseClientDirective(code)) {
+                const transformed = wrapClientCode(code, args.path)
+                return {
+                    contents: transformed,
+                    loader: 'tsx',
+                }
+            }
 
             if (args.path.includes('/pages/')) {
                 const transformed = wrapServerOnlyCode(code, args.path)

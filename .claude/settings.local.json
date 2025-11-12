@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "mcp__sequential-thinking__sequentialthinking"
+      "mcp__sequential-thinking__sequentialthinking",
+      "Read(//Users/hyunseokbyun/meact-test/**)",
+      "Read(//Users/hyunseokbyun/meact-test/pages/**)"
     ],
     "deny": [],
     "ask": []
