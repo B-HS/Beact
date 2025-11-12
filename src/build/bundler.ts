@@ -52,7 +52,8 @@ export const createClientBundle = async (
 
     // Transform page.tsx and save to temp file
     const pageCode = await Bun.file(absolutePagePath).text()
-    const transformedPageCode = extractPageComponent(pageCode, absolutePagePath)
+    const wrappedCode = wrapServerOnlyCode(pageCode, absolutePagePath)
+    const transformedPageCode = extractPageComponent(wrappedCode, absolutePagePath)
     const transformedPageFile = join(tempDir, `transformed-${bundleId}.tsx`)
     const tempFile = join(tempDir, `${bundleId}.tsx`)
 
@@ -121,7 +122,8 @@ export const createClientBundle = async (
                     // Extract client component from async Page/Layout pattern
                     let transformed = code
                     if (args.path.endsWith('/layout.tsx') || args.path.endsWith('/layout.ts')) {
-                        transformed = extractPageComponent(code, args.path)
+                        const wrappedLayout = wrapServerOnlyCode(code, args.path)
+                        transformed = extractPageComponent(wrappedLayout, args.path)
                     } else {
                         transformed = wrapServerOnlyCode(code, args.path)
                     }
