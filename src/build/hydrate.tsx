@@ -30,7 +30,7 @@ import Page from '${pagePath}'
         const layoutProps = isRootLayout ? { children, metadata: pageProps.metadata } : { children }
         return createElement(Layout.default || Layout, layoutProps)
       },
-      createElement(Page, pageProps)
+      createElement(Page.default || Page, pageProps)
     )
 
     hydrateRoot(document, tree)
